@@ -1,0 +1,5 @@
+azul-runner>=4.0.0
+pytz>=2020.04
+tzlocal>=3.0
+uncompyle6>=3.9.2
+xdis>=6.0.0
