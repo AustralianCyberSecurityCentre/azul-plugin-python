@@ -13,7 +13,7 @@ from azul_runner import (
     test_template,
 )
 
-from azul_plugin_python.main import AzulPluginPythonDecompiler
+from azul_plugin_python.main import AzulPluginPython
 
 
 class TestExecute(test_template.TestPlugin):
@@ -26,7 +26,7 @@ class TestExecute(test_template.TestPlugin):
     - test on random data
     """
 
-    PLUGIN_TO_TEST = AzulPluginPythonDecompiler
+    PLUGIN_TO_TEST = AzulPluginPython
     MULTI_PLUGIN_KEY = "unpacker"
     FILE_FORMAT_OVERRIDE = "executable/windows/pe64"
 

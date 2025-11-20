@@ -25,7 +25,7 @@ from azul_plugin_python.pyinstaller_unpacker import pyi
 from .decompiler.python_decompiler import decompile_file
 
 
-class AzulPluginPythonDecompiler(BinaryPlugin):
+class AzulPluginPython(BinaryPlugin):
     """Decompile and resubmit python bytecode."""
 
     CONTACT = "ASD's ACSC"
@@ -287,7 +287,7 @@ class AzulPluginPythonDecompiler(BinaryPlugin):
 
 def main():
     """Run the plugin from the command-line."""
-    cmdline_run(plugin=AzulPluginPythonDecompiler)
+    cmdline_run(plugin=AzulPluginPython)
 
 
 if __name__ == "__main__":
