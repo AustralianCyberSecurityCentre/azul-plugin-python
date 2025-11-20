@@ -24,6 +24,8 @@ setup(
         "console_scripts": [
             "azul-plugin-python-decompiler = azul_plugin_python_decompiler.main:main",
             "python_decompiler = azul_plugin_python_decompiler.python_decompiler:cmd",
+            "pyi_unpacker = azul_plugin_python_decompiler.pyinstaller_unpacker.pyi:main",
+            "pyz_unpacker = azul_plugin_python_decompiler.pyinstaller_unpacker.pyz:main",
         ]
     },
     use_scm_version=True,
