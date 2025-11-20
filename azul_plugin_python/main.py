@@ -16,11 +16,11 @@ from azul_runner import (
     settings,
 )
 
-from azul_plugin_python_decompiler.py2exe_unpacker import (
+from azul_plugin_python.py2exe_unpacker import (
     Py2ExeUnpacker,
     Py2ExeUnpackError,
 )
-from azul_plugin_python_decompiler.pyinstaller_unpacker import pyi
+from azul_plugin_python.pyinstaller_unpacker import pyi
 
 from .decompiler.python_decompiler import decompile_file
 

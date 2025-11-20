@@ -31,7 +31,7 @@ multi_line_output = 3
 skip = [
     "debian.txt",
     "README.md",
-    "azul_plugin_python_decompiler",
+    "azul_plugin_python",
     "tests"
 ]
 

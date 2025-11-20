@@ -3,7 +3,7 @@ import unittest
 
 from azul_runner.test_utils import FileManager
 
-from azul_plugin_python_decompiler.pyinstaller_unpacker import pyi, pyz
+from azul_plugin_python.pyinstaller_unpacker import pyi, pyz
 
 
 class PyInstallerTestMalware(unittest.TestCase):

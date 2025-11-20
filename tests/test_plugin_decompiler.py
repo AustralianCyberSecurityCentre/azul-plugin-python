@@ -13,7 +13,7 @@ from azul_runner import (
     test_template,
 )
 
-from azul_plugin_python_decompiler.main import AzulPluginPythonDecompiler
+from azul_plugin_python.main import AzulPluginPythonDecompiler
 
 
 class TestExecute(test_template.TestPlugin):

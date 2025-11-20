@@ -3,7 +3,7 @@ import unittest
 
 from azul_runner.test_utils import FileManager
 
-from azul_plugin_python_decompiler.py2exe_unpacker import (
+from azul_plugin_python.py2exe_unpacker import (
     Py2ExeUnpacker,
     Py2ExeUnpackError,
 )

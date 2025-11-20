@@ -11,7 +11,7 @@ import time
 import zlib
 from typing import Any, Optional
 
-from azul_plugin_python_decompiler.pyinstaller_unpacker.pyz import (
+from azul_plugin_python.pyinstaller_unpacker.pyz import (
     get_python_magic,
     get_python_version,
     list_pyz_files,

@@ -70,7 +70,7 @@ import xdis.bytecode
 import xdis.marsh
 import xdis.version
 
-from azul_plugin_python_decompiler.pylib_classifier.pylib_classifier import (
+from azul_plugin_python.pylib_classifier.pylib_classifier import (
     PyLibClassifier,
 )
 

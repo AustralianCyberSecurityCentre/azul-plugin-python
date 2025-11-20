@@ -6,7 +6,7 @@ Decompiles python code up to Python version 3.9
 
 ## Development Installation
 
-To install azul-plugin-python-decompiler for development run the command
+To install azul-plugin-python for development run the command
 (from the root directory of this project):
 
 ```bash
@@ -18,7 +18,7 @@ pip install -e .
 Usage on local files:
 
 ```bash
-azul-plugin-python-decompiler malware.file
+azul-plugin-python malware.file
 ```
 
 Example Output:
@@ -45,7 +45,7 @@ Generated child entities (1):
 Automated usage in system:
 
 ```bash
-azul-plugin-python-decompiler --server http://azul-dispatcher.localnet/
+azul-plugin-python --server http://azul-dispatcher.localnet/
 ```
 
 ## Issues

@@ -1,6 +1,6 @@
 import unittest
 
-from azul_plugin_python_decompiler.pylib_classifier import pylib_classifier
+from azul_plugin_python.pylib_classifier import pylib_classifier
 
 
 class TestClassifier(unittest.TestCase):

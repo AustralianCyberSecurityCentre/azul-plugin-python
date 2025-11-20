@@ -9,7 +9,7 @@ import unittest
 
 import xdis.magics
 
-from azul_plugin_python_decompiler.decompiler.python_decompiler import (
+from azul_plugin_python.decompiler.python_decompiler import (
     decompile,
     decompile_file,
 )
