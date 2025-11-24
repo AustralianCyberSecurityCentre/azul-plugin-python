@@ -9,7 +9,10 @@ import unittest
 
 import xdis.magics
 
-from azul_plugin_python_decompiler.python_decompiler import decompile, decompile_file
+from azul_plugin_python.decompiler.python_decompiler import (
+    decompile,
+    decompile_file,
+)
 
 test_script = 'print("Hello testing world!")'
 test_script_name = "hello.py"

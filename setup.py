@@ -11,19 +11,21 @@ def open_file(fname):
 
 
 setup(
-    name="azul-plugin-python-decompiler",
+    name="azul-plugin-python",
     description="Decompiles Python bytecode",
     author="Azul",
     author_email="azul@asd.gov.au",
     url="https://www.asd.gov.au/",
-    packages=["azul_plugin_python_decompiler"],
+    packages=["azul_plugin_python"],
     include_package_data=True,
     python_requires=">=3.12",
     classifiers=[],
     entry_points={
         "console_scripts": [
-            "azul-plugin-python-decompiler = azul_plugin_python_decompiler.main:main",
-            "python_decompiler = azul_plugin_python_decompiler.python_decompiler:cmd",
+            "azul-plugin-python = azul_plugin_python.main:main",
+            "python_decompiler = azul_plugin_python.python_decompiler:cmd",
+            "pyi_unpacker = azul_plugin_python.pyinstaller_unpacker.pyi:main",
+            "pyz_unpacker = azul_plugin_python.pyinstaller_unpacker.pyz:main",
         ]
     },
     use_scm_version=True,

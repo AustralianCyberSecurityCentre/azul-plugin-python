@@ -6,7 +6,7 @@ Decompiles python code up to Python version 3.9
 
 ## Development Installation
 
-To install azul-plugin-python-decompiler for development run the command
+To install azul-plugin-python for development run the command
 (from the root directory of this project):
 
 ```bash
@@ -18,7 +18,7 @@ pip install -e .
 Usage on local files:
 
 ```bash
-azul-plugin-python-decompiler malware.file
+azul-plugin-python malware.file
 ```
 
 Example Output:
@@ -45,7 +45,7 @@ Generated child entities (1):
 Automated usage in system:
 
 ```bash
-azul-plugin-python-decompiler --server http://azul-dispatcher.localnet/
+azul-plugin-python --server http://azul-dispatcher.localnet/
 ```
 
 ## Issues
@@ -99,6 +99,133 @@ shows comments `uncompyle6` has appended comments to the source it was able to d
 
     # file /tmp/tmpcdnm37ry.pyc
     # Deparsing hit an internal grammar-rule bug
+
+
+### PyInstaller
+
+Extracts Python bytecode and libraries from PyInstaller executables. Python bytecode may be decompilable with existing Python decompilers (uncompyle6 or decompyle3).
+
+Currently configured to process:
+
+- Win32 EXE
+- ELF
+- Mach-O
+
+Example Output:
+
+```
+----- AzulPluginUnbox-pyinstaller results -----
+COMPLETED
+
+events (3)
+
+event for binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af:None
+  {}
+  output features:
+                     box_count: 2
+                  box_filepath: PYZ-00.pyz
+                                unknown_unicode_filename.pyc
+                      box_type: pyinstaller
+    pyinstaller_build_platform: Windows
+                python_library: __future__
+                                _compat_pickle
+                                _compression
+                                _py_abc
+                                _pydatetime
+                                _pydecimal
+                                _strptime
+                                _threading_local
+                                argparse
+                                ast
+                                base64
+                                bisect
+                                bz2
+                                calendar
+                                code
+                                codeop
+                                contextlib
+                                contextvars
+                                copy
+                                csv
+                                ctypes
+                                dataclasses
+                                datetime
+                                decimal
+                                dis
+                                email
+                                fnmatch
+                                fractions
+                                getopt
+                                gettext
+                                gzip
+                                hashlib
+                                hmac
+                                http
+                                importlib
+                                inspect
+                                ipaddress
+                                json
+                                logging
+                                lzma
+                                mimetypes
+                                numbers
+                                opcode
+                                pathlib
+                                pickle
+                                pprint
+                                py_compile
+                                pyaes
+                                queue
+                                quopri
+                                random
+                                selectors
+                                shutil
+                                signal
+                                socket
+                                sqlite3
+                                ssl
+                                statistics
+                                string
+                                stringprep
+                                subprocess
+                                tarfile
+                                tempfile
+                                textwrap
+                                threading
+                                token
+                                tokenize
+                                tracemalloc
+                                typing
+                                urllib
+                                urllib3
+                                zipfile
+                python_version: Python 3.12
+
+event for binary:95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995:None
+  {'action': 'unpacked'}
+  child of binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
+  output data streams (1):
+    1616841 bytes - EventData(hash='95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995', label='content')
+  output features:
+    filename: PYZ-00.pyz
+
+event for binary:f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4:None
+  {'action': 'unpacked'}
+  child of binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
+  output data streams (1):
+    1470 bytes - EventData(hash='f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4', label='content')
+  output features:
+    filename: unknown_unicode_filename.pyc
+
+Feature key:
+  box_count:  Number of items found in the box
+  box_filepath:  This entity contains this filepath
+  box_type:  The binary is of this box type
+  filename:  The name of the file in its parent archive
+  pyinstaller_build_platform:  Platform used to build PyInstaller archive
+  python_library:  Python library package within this archive
+  python_version:  Python version used to build archive
+```
 
 ## Python Package management
 

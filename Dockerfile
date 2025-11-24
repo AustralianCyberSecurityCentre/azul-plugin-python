@@ -29,7 +29,7 @@ RUN cd /tmp/src && python -m build . --outdir /tmp/
 RUN pip install \
     --find-links /tmp/ \
     # Version specified to ensure the package that was just built is installed instead of a newer version of the package.
-    azul-plugin-python-decompiler==$(cd /tmp/src && python -m setuptools_scm)
+    azul-plugin-python==$(cd /tmp/src && python -m setuptools_scm)
 
 # If on dev branch, install dev versions of azul packages (locate packages)
 # Note pip install --pre --upgrade --no-deps is not valid because it doesn't install the requirements of dev azul packages which are needed.
@@ -37,7 +37,7 @@ RUN if [ "$GIT_BRANCH_NAME" = "refs/heads/dev" ] ; then \
     pip freeze | grep 'azul-.*==' | cut -d "=" -f 1 | xargs -I {} pip install --find-links /tmp/ --upgrade '{}>=0.0.1.dev' ;fi
 # re-run install sdist to get correct version of current package after dev install.
 RUN if [ "$GIT_BRANCH_NAME" = "refs/heads/dev" ] ; then \
-    pip install --find-links /tmp/ azul-plugin-python-decompiler==$(cd /tmp/src && python -m setuptools_scm);fi
+    pip install --find-links /tmp/ azul-plugin-python==$(cd /tmp/src && python -m setuptools_scm);fi
 
 
 FROM $REGISTRY/$BASE_IMAGE:$BASE_TAG AS base
@@ -77,4 +77,4 @@ RUN touch /tmp/testingpassed
 FROM base AS release
 # copy from `tester` stage to ensure testing is not skipped due to build optimisations.
 COPY --from=tester /tmp/testingpassed /tmp/
-ENTRYPOINT ["azul-plugin-python-decompiler"]
+ENTRYPOINT ["azul-plugin-python"]
