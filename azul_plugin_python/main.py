@@ -1,5 +1,8 @@
 """Decompile and resubmit python bytecode."""
 
+import pathlib
+import tempfile
+import traceback
 from datetime import datetime, timezone
 
 import xdis.magics
@@ -15,6 +18,7 @@ from azul_runner import (
     cmdline_run,
     settings,
 )
+from pylingual.decompiler import decompile as pylingual_decompile
 
 from azul_plugin_python.py2exe_unpacker import (
     Py2ExeUnpacker,
@@ -55,8 +59,8 @@ class AzulPluginPython(BinaryPlugin):
 
     SETTINGS = add_settings(
         # Python bytecode is either data or python x.y byte-compiled
-        filter_data_types={"content": DECOMPILE_DATA_TYPES + UNPACKER_DATA_TYPES},
-        run_timeout=(int, 180),
+        filter_data_types={"content": list(set(DECOMPILE_DATA_TYPES + UNPACKER_DATA_TYPES))},
+        run_timeout=(int, 300),
     )
     # features set on parents and children
     FEATURES = [
@@ -80,11 +84,37 @@ class AzulPluginPython(BinaryPlugin):
         super().__init__(config)
 
         self.register_multiplugin("decompiler", None, self.execute_decompiler)
+        self.register_multiplugin("pylingual", None, self.execute_pylingual)
         self.register_multiplugin("unpacker", None, self.execute_unpacker)
 
     def execute(self, job: Job):
         """Accept anything that passes the initial filters."""
         return
+
+    def execute_pylingual(self, job: Job):
+        """Decompile provided bytecode with pylingual."""
+        if job.event.entity.file_format not in self.DECOMPILE_DATA_TYPES:
+            return State(
+                label=State.Label.OPT_OUT,
+                failure_name="not_byte_code",
+                message="file is not python bytecode",
+            )
+        with tempfile.NamedTemporaryFile() as decompiled_py:
+            try:
+                pylingual_decompile(
+                    pyc=pathlib.Path(job.get_data().get_filepath()), save_to=pathlib.Path(decompiled_py.name), top_k=10
+                )
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+                return State(
+                    label=State.Label.OPT_OUT,
+                    failure_name="not_pylingual_compatible",
+                    message="file cannot be decompiled by pylingual,"
+                    + " either the python version is too old or it's not bytecode",
+                )
+            decompiled_py.seek(0)
+            self.add_data_file(DataLabel.TEXT, {}, decompiled_py)
 
     def execute_decompiler(self, job: Job):
         """Decompile the provided python bytecode."""

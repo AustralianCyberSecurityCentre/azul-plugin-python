@@ -28,6 +28,7 @@ class TestExecute(test_template.TestPlugin):
 
     PLUGIN_TO_TEST = AzulPluginPython
     MULTI_PLUGIN_KEY = "decompiler"
+    MULTI_PLUGIN_KEY_SECONDARY = "pylingual"
     FILE_FORMAT_OVERRIDE = "code/python"
 
     def test_random_data(self):
@@ -56,6 +57,17 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(
+                    State.Label.OPT_OUT,
+                    failure_name="not_pylingual_compatible",
+                    message="file cannot be decompiled by pylingual, either the python version is too old or it's not bytecode",
+                )
+            ),
+        )
+
     def test_fake_pyc(self):
         """Random input data prepended with a valid Python bytecode header."""
         result = self.do_execution(
@@ -73,6 +85,17 @@ class TestExecute(test_template.TestPlugin):
         self.assertJobResult(
             result.get(self.MULTI_PLUGIN_KEY),
             JobResult(state=State(State.Label.ERROR_EXCEPTION, message="decompilation failed")),
+        )
+
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(
+                    State.Label.OPT_OUT,
+                    failure_name="not_pylingual_compatible",
+                    message=result.get(self.MULTI_PLUGIN_KEY_SECONDARY).state.message,
+                )
+            ),
         )
 
     def test_timestamp(self):
@@ -93,13 +116,13 @@ class TestExecute(test_template.TestPlugin):
             ],
         )
         # hashes are prone to change
-        result = result.get(self.MULTI_PLUGIN_KEY)
-        result.data = {}
-        result.events[0].data[0].hash = "grape"
-        result.events[1].sha256 = "grape"
-        result.events[1].data[0].hash = "grape"
+        main_result = result.get(self.MULTI_PLUGIN_KEY)
+        main_result.data = {}
+        main_result.events[0].data[0].hash = "grape"
+        main_result.events[1].sha256 = "grape"
+        main_result.events[1].data[0].hash = "grape"
         self.assertJobResult(
-            result,
+            main_result,
             JobResult(
                 state=State(State.Label.COMPLETED),
                 events=[
@@ -137,6 +160,17 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(
+                    State.Label.OPT_OUT,
+                    failure_name="not_pylingual_compatible",
+                    message=result.get(self.MULTI_PLUGIN_KEY_SECONDARY).state.message,
+                )
+            ),
+        )
+
     def test_filepath(self):
         """Python bytecode that unpacks to a long file path.
 
@@ -155,13 +189,13 @@ class TestExecute(test_template.TestPlugin):
             ],
         )
         # hashes are prone to change
-        result = result.get(self.MULTI_PLUGIN_KEY)
-        result.data = {}
-        result.events[0].data[0].hash = "grape"
-        result.events[1].sha256 = "grape"
-        result.events[1].data[0].hash = "grape"
+        main_result = result.get(self.MULTI_PLUGIN_KEY)
+        main_result.data = {}
+        main_result.events[0].data[0].hash = "grape"
+        main_result.events[1].sha256 = "grape"
+        main_result.events[1].data[0].hash = "grape"
         self.assertJobResult(
-            result,
+            main_result,
             JobResult(
                 state=State(State.Label.COMPLETED),
                 events=[
@@ -203,6 +237,24 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(State.Label.COMPLETED),
+                events=[
+                    Event(
+                        sha256="57dd046e868c7c2be46d15cc3377dbb12018d666640cc14ae3a48f49c73acaf1",
+                        data=[
+                            EventData(
+                                hash="c1abf4590dcf2875e1099b4a4b0f34e0ab2c72d5c1850109a6e8dd21efb1d417", label="text"
+                            )
+                        ],
+                    )
+                ],
+                data={"c1abf4590dcf2875e1099b4a4b0f34e0ab2c72d5c1850109a6e8dd21efb1d417": b""},
+            ),
+        )
+
     def test_partial_no_more(self):
         """Python bytecode that partially decompiles with uncompyle6 3.6.7.
 
@@ -223,13 +275,13 @@ class TestExecute(test_template.TestPlugin):
         )
         # hashes are prone to change
         # hashes are prone to change
-        result = result.get(self.MULTI_PLUGIN_KEY)
-        result.data = {}
-        result.events[0].data[0].hash = "grape"
-        result.events[1].sha256 = "grape"
-        result.events[1].data[0].hash = "grape"
+        main_result = result.get(self.MULTI_PLUGIN_KEY)
+        main_result.data = {}
+        main_result.events[0].data[0].hash = "grape"
+        main_result.events[1].sha256 = "grape"
+        main_result.events[1].data[0].hash = "grape"
         self.assertJobResult(
-            result,
+            main_result,
             JobResult(
                 state=State(State.Label.COMPLETED),
                 events=[
@@ -268,6 +320,25 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(State.Label.COMPLETED),
+                events=[
+                    Event(
+                        sha256="f9889a39046086f5e6297b01c58d92ce550c1fcbab5fe1d966c273bd2b1fb554",
+                        data=[
+                            EventData(
+                                hash="6f8367aafc86af6b2a6adcbf0e2adec67cc5fc76c3bbb7117c1acf3ca0f5db36",
+                                label="text",
+                            )
+                        ],
+                    )
+                ],
+                data={"6f8367aafc86af6b2a6adcbf0e2adec67cc5fc76c3bbb7117c1acf3ca0f5db36": b""},
+            ),
+        )
+
     def test_python27(self):
         """Test something from Python 2.7.
 
@@ -286,13 +357,13 @@ class TestExecute(test_template.TestPlugin):
             ],
         )
         # hashes are prone to change
-        result = result.get(self.MULTI_PLUGIN_KEY)
-        result.data = {}
-        result.events[0].data[0].hash = "grape"
-        result.events[1].sha256 = "grape"
-        result.events[1].data[0].hash = "grape"
+        main_result = result.get(self.MULTI_PLUGIN_KEY)
+        main_result.data = {}
+        main_result.events[0].data[0].hash = "grape"
+        main_result.events[1].sha256 = "grape"
+        main_result.events[1].data[0].hash = "grape"
         self.assertJobResult(
-            result,
+            main_result,
             JobResult(
                 state=State(State.Label.COMPLETED),
                 events=[
@@ -332,6 +403,17 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(
+                    State.Label.OPT_OUT,
+                    failure_name="not_pylingual_compatible",
+                    message=result.get(self.MULTI_PLUGIN_KEY_SECONDARY).state.message,
+                )
+            ),
+        )
+
     def test_python310(self):
         """Test something from Python 3.10 and make sure it fails.
 
@@ -348,12 +430,31 @@ class TestExecute(test_template.TestPlugin):
                 )
             ],
         )
-        result = result.get(self.MULTI_PLUGIN_KEY)
         self.assertJobResult(
-            result,
+            result.get(self.MULTI_PLUGIN_KEY),
             JobResult(
                 state=State(
-                    State.Label.OPT_OUT, failure_name="unsupported_python_version", message=result.state.message
+                    State.Label.OPT_OUT,
+                    failure_name="unsupported_python_version",
+                    message=result.get(self.MULTI_PLUGIN_KEY).state.message,
                 )
+            ),
+        )
+        self.assertJobResult(
+            result.get(self.MULTI_PLUGIN_KEY_SECONDARY),
+            JobResult(
+                state=State(State.Label.COMPLETED),
+                events=[
+                    Event(
+                        sha256="f9b6351131c9db9126804e88fa476d1863f785d2c1e342c7ebe74c7486384f28",
+                        data=[
+                            EventData(
+                                hash="2a2217e022529438237dfad09362df83643a87a67638efce2adfed9e44c5e05b",
+                                label="text",
+                            )
+                        ],
+                    )
+                ],
+                data={"2a2217e022529438237dfad09362df83643a87a67638efce2adfed9e44c5e05b": b""},
             ),
         )
