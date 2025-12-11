@@ -5,4 +5,4 @@ uncompyle6>=3.9.3
 xdis>=6.1.8
 isort>=4.3,<5.0
 pefile
-git+https://github.com/syssec-utd/pylingual.git@9f0ba2aa0195ce853b65e1064e8aaae09b67966f
+pylingual @git+https://github.com/syssec-utd/pylingual.git@9f0ba2aa0195ce853b65e1064e8aaae09b67966f
