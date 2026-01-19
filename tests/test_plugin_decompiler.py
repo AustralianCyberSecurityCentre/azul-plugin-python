@@ -48,11 +48,7 @@ class TestExecute(test_template.TestPlugin):
         self.assertJobResult(
             result.get(self.MULTI_PLUGIN_KEY),
             JobResult(
-                state=State(
-                    State.Label.OPT_OUT,
-                    failure_name="unknown_python_magic_bytes",
-                    message="python magic bytes unknown or not a pyc file",
-                )
+                state=State(State.Label.OPT_OUT, failure_name="not_byte_code", message="file is not python bytecode")
             ),
         )
 
@@ -166,8 +162,7 @@ class TestExecute(test_template.TestPlugin):
                 state=State(State.Label.COMPLETED),
                 events=[
                     Event(
-                        entity_type="binary",
-                        entity_id="57dd046e868c7c2be46d15cc3377dbb12018d666640cc14ae3a48f49c73acaf1",
+                        sha256="57dd046e868c7c2be46d15cc3377dbb12018d666640cc14ae3a48f49c73acaf1",
                         data=[
                             EventData(
                                 hash="grape",
@@ -178,12 +173,8 @@ class TestExecute(test_template.TestPlugin):
                         features={"python_version": [FV("Python 3.6")], "tag": [FV("python_bytecode")]},
                     ),
                     Event(
-                        parent=EventParent(
-                            entity_type="binary",
-                            entity_id="57dd046e868c7c2be46d15cc3377dbb12018d666640cc14ae3a48f49c73acaf1",
-                        ),
-                        entity_type="binary",
-                        entity_id="grape",
+                        sha256="grape",
+                        parent=EventParent(sha256="57dd046e868c7c2be46d15cc3377dbb12018d666640cc14ae3a48f49c73acaf1"),
                         relationship={"action": "decompiled"},
                         data=[
                             EventData(
@@ -192,9 +183,7 @@ class TestExecute(test_template.TestPlugin):
                             )
                         ],
                         features={
-                            "filename": [
-                                FV(Filepath("D:\\PROYECTOS • KTZ\\Codigos\\Spotify Key Generator\\adbuz.py"))
-                            ],
+                            "filename": [FV("D:\\PROYECTOS • KTZ\\Codigos\\Spotify Key Generator\\adbuz.py")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
                     ),

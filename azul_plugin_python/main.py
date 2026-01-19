@@ -51,6 +51,8 @@ class AzulPluginPython(BinaryPlugin):
         "executable/linux/so64",
         "executable/linux/so32",
         "executable/mach-o",
+        # zlib as sometimes pyinstallers are identified as this.
+        "archive/zlib",
     ]
 
     SETTINGS = add_settings(
@@ -259,6 +261,10 @@ class AzulPluginPython(BinaryPlugin):
     def execute_unpacker(self, job: Job):
         """Extract the python byte code from a file with py2exe and pyinstaller."""
         if job.event.entity.file_format not in self.UNPACKER_DATA_TYPES:
+            print(job.event.entity.file_format)
+            print(job.event.entity.file_format)
+            print(job.event.entity.file_format)
+            print(job.event.entity.file_format)
             return State(
                 label=State.Label.OPT_OUT,
                 failure_name="not_executable",
