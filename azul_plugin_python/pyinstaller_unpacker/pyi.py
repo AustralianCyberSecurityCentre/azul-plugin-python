@@ -78,7 +78,6 @@ def process_pyinstaller(contents: bytes) -> Optional[dict]:
     # get archive of other files
     pyz_archives = get_pyz_contents(package, toc)
     for archive in pyz_archives:
-
         # if we set built an empty bytecode header earlier, replace it with a correct bytecode magic from the PYZ files
         if pyc_header[:4] == b"\x00\x00\x00\x00" and (pyc_magic := get_python_magic(archive[1])):
             pyc_header = pyc_magic + pyc_header[4:]
@@ -198,22 +197,22 @@ def parse_cookie(cookie: bytes) -> dict:
         # has a py version
         keys = ["magic", "length", "toc_index", "toc_length", "py_version", "py_lib"]
         values = struct.unpack(">8siiii64s", cookie)
-        x = dict(zip(keys, values))
+        x = dict(zip(keys, values, strict=False))
     elif len(cookie) == 84:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length", "py_lib"]
         values = struct.unpack(">8siii64s", cookie)
-        x = dict(zip(keys, values))
+        x = dict(zip(keys, values, strict=False))
     elif len(cookie) == 24:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length", "py_version"]
         values = struct.unpack(">8siiii", cookie)
-        x = dict(zip(keys, values))
+        x = dict(zip(keys, values, strict=False))
     elif len(cookie) == 20:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length"]
         values = struct.unpack(">8siii", cookie)
-        x = dict(zip(keys, values))
+        x = dict(zip(keys, values, strict=False))
     else:
         # cookie length is unknown, which is bad here
         raise InvalidFile
@@ -260,7 +259,7 @@ def get_record(record: bytes) -> tuple[str, dict[str, Any]]:
     # convert entry type to str for internal use
     values = (v[0], v[1], v[2], v[3], v[4], v[5].decode("utf-8"))
 
-    rec = dict(zip(keys, values))
+    rec = dict(zip(keys, values, strict=False))
     try:
         # randomish stuff can sometime pass this decode but still be gunk?
         name = record[18:].rstrip(b"\x00").decode("utf-8")
@@ -475,7 +474,8 @@ def main():
 
                     print(
                         "[+] Writing {} ({})".format(
-                            fname, hashlib.md5(scr).hexdigest()  # noqa: S303 # nosec B303 B324
+                            fname,
+                            hashlib.md5(scr).hexdigest(),  # noqa: S324
                         )
                     )
                     write_to_disk(fname, scr)
@@ -483,7 +483,8 @@ def main():
             elif key.lower().endswith(".pyz"):
                 print(
                     "[+] Writing {} ({})".format(
-                        key, hashlib.md5(r[key][0]).hexdigest()  # noqa: S303 # nosec B303 B324
+                        key,
+                        hashlib.md5(r[key][0]).hexdigest(),  # noqa: S324
                     )
                 )
                 write_to_disk(key, r[key][0])

@@ -16,7 +16,7 @@ LOCAL = "Suspected Local Folder Libraries"
 
 import_keys = ["future", "standard", "first", "third", "local"]
 label_keys = [FUTURE, STDLIB, FIRSTPARTY, THIRDPARTY, LOCAL]
-trans_keys = dict(zip(label_keys, import_keys))
+trans_keys = dict(zip(label_keys, import_keys, strict=False))
 
 # list of standard library files that isort doesn't identify
 # add entries to this list when things that are obviously part of the std lib get lost
