@@ -229,7 +229,7 @@ Feature key:
 
 ## Python Package management
 
-This python package is managed using a `setup.py` and `pyproject.toml` file.
+This python package is managed using a `pyproject.toml` file.
 
 Standardisation of installing and testing the python package is handled through tox.
 Tox commands include:
