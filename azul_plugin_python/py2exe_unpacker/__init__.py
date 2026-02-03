@@ -371,7 +371,7 @@ class Py2ExeUnpacker:
         # extract the resource
         script_resource = self._extract_resource(contents)
 
-        self.hash = hashlib.md5(contents).hexdigest()  # noqa: S303 # nosec B303 B324
+        self.hash = hashlib.md5(contents).hexdigest()  # noqa: S324
 
         # if no zip, then get the python version from the scripts
         if self.py_version_int == 0:
@@ -456,14 +456,14 @@ def main():
                     with open(bn, "wb") as f:
                         fc = res["scripts"][filename]
                         f.write(fc)
-                        digest = hashlib.md5(fc).hexdigest()  # noqa: S303 # nosec B303 B324
+                        digest = hashlib.md5(fc).hexdigest()  # noqa: S324
                         print("Wrote {} bytes to {} ({})".format(len(fc), bn, digest))
             elif k == "build_time":
                 print("{}: {}".format(k, datetime.fromtimestamp(res[k]).isoformat()))
             elif k.endswith(".zip"):
                 with open(k, "wb") as f:
                     f.write(res[k])
-                    digest = hashlib.md5(res[k]).hexdigest()  # noqa: S303 # nosec B303 B324
+                    digest = hashlib.md5(res[k]).hexdigest()  # noqa: S324
                     print("Wrote {} bytes to {} ({})".format(len(res[k]), k, digest))
             elif k == "import_report_short" or k == "import_report_long":
                 fn = k + ".txt"

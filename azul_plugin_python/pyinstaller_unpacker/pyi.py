@@ -475,7 +475,7 @@ def main():
                     print(
                         "[+] Writing {} ({})".format(
                             fname,
-                            hashlib.md5(scr).hexdigest(),  # noqa: S303 # nosec B303 B324
+                            hashlib.md5(scr).hexdigest(),  # noqa: S324
                         )
                     )
                     write_to_disk(fname, scr)
@@ -484,7 +484,7 @@ def main():
                 print(
                     "[+] Writing {} ({})".format(
                         key,
-                        hashlib.md5(r[key][0]).hexdigest(),  # noqa: S303 # nosec B303 B324
+                        hashlib.md5(r[key][0]).hexdigest(),  # noqa: S324
                     )
                 )
                 write_to_disk(key, r[key][0])

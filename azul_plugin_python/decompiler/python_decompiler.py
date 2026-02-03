@@ -170,7 +170,7 @@ def print_results(res):
     for key in res.keys():
         if key == "source":
             content = res[key]
-            filehash = hashlib.md5(content).hexdigest()  # noqa: S303 # nosec B303 B324
+            filehash = hashlib.md5(content).hexdigest()  # noqa: S324
             if "filename" in res:
                 fn = res["filename"]
             else:
