@@ -134,7 +134,7 @@ class AzulPluginPython(BinaryPlugin):
             # set python version on the parent binary
             # we don't also set it on the child, since it shouldn't be a child feature
             # the feature value is formatted to match other plugins that set the same feature
-            parent_features["python_version"] = f'Python {dc["version"]}'
+            parent_features["python_version"] = f"Python {dc['version']}"
 
         if "timestamp" in dc:
             # set compile time on this binary

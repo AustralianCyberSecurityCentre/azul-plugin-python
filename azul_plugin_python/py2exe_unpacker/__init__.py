@@ -122,8 +122,8 @@ class Py2ExeUnpacker:
         try:
             pe = pefile.PE(data=contents, fast_load=True)
             pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_RESOURCE"]])
-        except pefile.PEFormatError:
-            raise Py2ExeUnpackError("Not a PE file!")
+        except pefile.PEFormatError as e:
+            raise Py2ExeUnpackError("Not a PE file!") from e
 
         resource = None
 
@@ -147,8 +147,8 @@ class Py2ExeUnpacker:
                     try:
                         dll = pe.get_memory_mapped_image()[offset : offset + size]
                         self._set_python_version_from_dll(dll)
-                    except pefile.PEFormatError:
-                        raise Py2ExeUnpackError("Invalid Python DLL resource!")
+                    except pefile.PEFormatError as e:
+                        raise Py2ExeUnpackError("Invalid Python DLL resource!") from e
 
         if resource is None:
             raise Py2ExeUnpackError("No PYTHONSCRIPT resource found!")
@@ -321,9 +321,9 @@ class Py2ExeUnpacker:
         try:
             bytecodes = xdis.marsh.loads(py_scripts)
             logging.info("Found {} scripts within marshalled bytecode resource".format(len(bytecodes)))
-        except (ValueError, TypeError, AttributeError):
+        except (ValueError, TypeError, AttributeError) as e:
             # could we instead
-            raise Py2ExeUnpackError("Failed to marshal script bytecode with xdis {}!".format(xdis_version()))
+            raise Py2ExeUnpackError("Failed to marshal script bytecode with xdis {}!".format(xdis_version())) from e
 
         for bytecode in bytecodes:
             if bytecode.co_filename.endswith(".py"):
@@ -345,10 +345,10 @@ class Py2ExeUnpacker:
                 # append complete bytecode with header to list
                 self.pycs.append(bytes(self.pyc_header + pyc))
                 self.pyc_filenames.append(filename)
-            except (AttributeError, UnicodeDecodeError):
+            except (AttributeError, UnicodeDecodeError) as e:
                 raise Py2ExeUnpackError(
                     "Failed to dump marshalled bytecode with xdis {}!".format(xdis.version.VERSION)
-                )
+                ) from e
 
     def _set_timestamp(self):
         """Set timestamp if one found in .pyc header."""
@@ -389,7 +389,7 @@ class Py2ExeUnpacker:
         Optionally include zip content if unpacker flag set.
         :return: dict of results
         """
-        results = {"scripts": dict(zip(self.pyc_filenames, self.pycs))}
+        results = {"scripts": dict(zip(self.pyc_filenames, self.pycs, strict=False))}
 
         if len(self.py_version_string) > 0:
             results["python_version"] = self.py_version_string
