@@ -175,10 +175,10 @@ class AzulPluginPython(BinaryPlugin):
         """
         return b"\n".join((x for x in source.split(b"\n") if not x.startswith(b"#")))
 
-    def execute_pyinstaller(self, raw_content: bytes) -> str | None:
+    def execute_pyinstaller(self, file_path: str) -> str | None:
         """Attempt to extract python byte code using pyinstaller."""
         try:
-            contents = pyi.process_pyinstaller(raw_content)
+            contents = pyi.process_pyinstaller(file_path)
         except pyi.NoPackage:
             return "No package found"
         except pyi.InvalidFile:
@@ -218,11 +218,11 @@ class AzulPluginPython(BinaryPlugin):
         self.add_feature_values("pyinstaller_build_platform", contents.get("build_platform"))
         return None
 
-    def execute_py2exe(self, raw_content: bytes) -> str | None:
+    def execute_py2exe(self, file_path: str) -> str | None:
         """Attempt to extract pyc files the underlying pyc files from an executable."""
         try:
             # unpack everything and store it until extract needs it
-            py2exe = Py2ExeUnpacker(raw_content)
+            py2exe = Py2ExeUnpacker(file_path)
             contents = py2exe.get_results()
         except Py2ExeUnpackError as e:
             return f"Extraction error, {e}"
@@ -271,8 +271,8 @@ class AzulPluginPython(BinaryPlugin):
                 message="file is not an executable",
             )
         print("starting pyinstaller")
-        content = job.get_data().read()
-        error_message = self.execute_pyinstaller(content)
+        file_path = job.get_data().get_filepath()
+        error_message = self.execute_pyinstaller(file_path)
         print("pyinstaller error is ", error_message)
         # Successful extraction completed so plugin can stop.
         if not error_message:
@@ -280,7 +280,7 @@ class AzulPluginPython(BinaryPlugin):
 
         print("starting py2exe")
         # Attempt py2exe unpacker as pyinstaller didn't work.
-        error_message_py2exe = self.execute_py2exe(content)
+        error_message_py2exe = self.execute_py2exe(file_path)
         print("py2exe error is ", error_message_py2exe)
 
         if error_message_py2exe:

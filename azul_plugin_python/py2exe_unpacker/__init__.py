@@ -55,6 +55,7 @@ this tool.  However, 7-Zip can open these archives and be used to extract .pyc f
 
 import hashlib
 import logging
+import mmap
 import ntpath
 import re
 import struct
@@ -94,7 +95,7 @@ class Py2ExeUnpacker:
 
     # extract_zip flag is used control when zip archives within py2exe are unpacked
     # unbox or azul_unbox won't set it, so they don't get zips
-    def __init__(self, data=None, extract_zip=False):
+    def __init__(self, file_path: str | None = None, extract_zip=False):
         """Create a new unpacker for the specified data."""
         self.py_version_int = 0
         self.py_version_string = ""
@@ -109,10 +110,10 @@ class Py2ExeUnpacker:
         self._extract_zip = extract_zip
 
         # process data if given
-        if data is not None:
-            self.unpack(data)
+        if file_path is not None:
+            self.unpack(file_path)
 
-    def _extract_resource(self, contents):
+    def _extract_resource(self, file_path: str):
         """Extract the script resource from the py2exe.
 
         :param contents: the contents of a py2exe binary in a bytes object
@@ -120,7 +121,7 @@ class Py2ExeUnpacker:
         :raises: Py2ExeUnpackError
         """
         try:
-            pe = pefile.PE(data=contents, fast_load=True)
+            pe = pefile.PE(file_path, fast_load=True)
             pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_RESOURCE"]])
         except pefile.PEFormatError as e:
             raise Py2ExeUnpackError("Not a PE file!") from e
@@ -155,7 +156,7 @@ class Py2ExeUnpacker:
 
         # try to set the python version from the exe
         if self.py_version_int == 0:
-            self._set_python_version_from_exe(contents)
+            self._set_python_version_from_exe(file_path)
 
         # the resource should start with the correct marker
         if resource.find(self.MARKER) != 0:
@@ -163,7 +164,9 @@ class Py2ExeUnpacker:
 
         # check if zip exists
         offset = pe.get_overlay_data_start_offset()
-        self.overlay = contents[offset:]
+        with open(file_path, "rb") as f:
+            f.seek(offset)
+            self.overlay = f.read()
 
         return resource
 
@@ -201,16 +204,19 @@ class Py2ExeUnpacker:
             self.py_version_string = "Python {}.{}".format(self.py_version_int // 10, self.py_version_int % 10)
             logging.info("Detected {} within boot_common.pyc".format(self.py_version_string))
 
-    def _set_python_version_from_exe(self, content):
+    def _set_python_version_from_exe(self, file_path: str):
         """Set the python version from a string hardcoded into the exe.
 
         :param content: the contents of the file
         """
-        matches = re.search(b"PYTHON(..)\\.DLL", content)
-        if matches is not None:
-            self.py_version_int = int(matches.group(1))
-            self.py_version_string = "Python {}.{}".format(self.py_version_int // 10, self.py_version_int % 10)
-            logging.info("Detected {} within exe".format(self.py_version_string))
+        pattern = re.compile(b"PYTHON(..)\\.DLL")
+        with open(file_path, "rb") as raw_file:
+            with mmap.mmap(raw_file.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+                for m in pattern.finditer(mm):
+                    self.py_version_int = int(m.group(1))
+                    self.py_version_string = "Python {}.{}".format(self.py_version_int // 10, self.py_version_int % 10)
+                    logging.info("Detected {} within exe".format(self.py_version_string))
+                    break
 
     def _set_header(self):
         """Determine what the header for any compiled python scripts should be."""
@@ -363,15 +369,24 @@ class Py2ExeUnpacker:
         else:
             self.compile_time = 0
 
-    def unpack(self, contents):
+    @staticmethod
+    def _md5_of_file(filepath: str, chunk_size=10 * 1024):
+        """Calculate the md5 hash of a file."""
+        md5 = hashlib.md5()  # noqa: S324
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(chunk_size), b""):
+                md5.update(chunk)
+        return md5.hexdigest()
+
+    def unpack(self, file_path: str):
         """Unpack a Py2Exe binary.
 
         :param contents: a bytes object containing a py2exe binary file
         """
         # extract the resource
-        script_resource = self._extract_resource(contents)
+        script_resource = self._extract_resource(file_path)
 
-        self.hash = hashlib.md5(contents).hexdigest()  # noqa: S324
+        self.hash = self._md5_of_file(file_path)
 
         # if no zip, then get the python version from the scripts
         if self.py_version_int == 0:
@@ -439,14 +454,13 @@ def main():
         print("Usage: {} PY2EXE_FILE_TO_UNPACK".format(sys.argv[0]))
         sys.exit(1)
 
-    with open(sys.argv[1], "rb") as f:
-        content = f.read()
+    file_path = sys.argv[1]
 
     logging.basicConfig(level=logging.WARNING)
 
     try:
         # we want zips here, so pass the flag
-        res = Py2ExeUnpacker(content, extract_zip=True).get_results()
+        res = Py2ExeUnpacker(file_path, extract_zip=True).get_results()
 
         for k in res.keys():
             if k == "scripts":

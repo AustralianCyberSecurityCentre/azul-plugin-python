@@ -4,6 +4,7 @@ Works on Linux, Mac and Windows executables.
 """
 
 import hashlib
+import mmap
 import os
 import struct
 import sys
@@ -36,14 +37,14 @@ PYI_MAGIC = b"MEI\x0c\x0b\x0a\x0b\x0e"
 ZLIB_HEADERS = [b"\x78\xda", b"\x78\x9c"]
 
 
-def process_pyinstaller(contents: bytes) -> Optional[dict]:
+def process_pyinstaller(file_path: str) -> Optional[dict]:
     """Extract all the interesting elements of a pyinstaller file.
 
-    :param contents: A PyInstaller file
+    :param file_path: A PyInstaller file path
     :return: A dict containing contents and metadata, None otherwise
     """
     # get the package and size of the cookie at the end
-    package, cookie_size = find_package(contents)
+    package, cookie_size = find_package(file_path)
     cookie = package[-cookie_size:]
 
     d = parse_cookie(cookie)
@@ -111,7 +112,9 @@ def process_pyinstaller(contents: bytes) -> Optional[dict]:
     results["cookie_size"] = cookie_size
 
     # get platform, global is set previously by get_package() or ??
-    platform = set_platform(d.get("py_lib", ""), contents[:16])
+    with open(file_path, "rb") as f:
+        platform_header = f.read(16)
+    platform = set_platform(d.get("py_lib", ""), platform_header)
     if platform is not None:
         results["build_platform"] = platform
 
@@ -151,7 +154,7 @@ def set_platform(lib: str, header: bytes) -> str:
         return "Linux"
 
 
-def find_package(contents: bytes) -> tuple[bytes, int]:
+def find_package(file_path: str) -> tuple[bytes, int]:
     """Find the package within the PyInstaller file and return it.
 
     If the entire file is the package, this still works nicely.
@@ -159,7 +162,9 @@ def find_package(contents: bytes) -> tuple[bytes, int]:
     :return: the extracted package
     """
     # find magic
-    marker = contents.rfind(PYI_MAGIC)
+    with open(file_path, "rb") as raw_file:
+        with mmap.mmap(raw_file.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+            marker = mm.rfind(PYI_MAGIC)
 
     # marker points to start of toc in file space
     if marker == -1:
@@ -170,17 +175,24 @@ def find_package(contents: bytes) -> tuple[bytes, int]:
     # start == magic + magic_struct_size - package_size
     # cookie struct is one of these sizes, hopefully
     struct_sizes = [88, 84, 20, 24]
+    with open(file_path, "rb") as raw_file:
+        raw_file.seek(marker + 8)
+        # get package size
+        p = struct.unpack(">i", raw_file.read(4))[0]
 
-    # get package size
-    p = struct.unpack(">i", contents[marker + 8 : marker + 12])[0]
-
-    for s in struct_sizes:
-        index = marker + s - p
-        # package usually starts with zlib compressed file, older packages have PYZ archive first
-        if contents[index : index + 2] in ZLIB_HEADERS or contents[index : index + 4] == b"PYZ\x00":
-            cookie = contents[marker : marker + s]
-            package = contents[index : index + p]
-            return package, len(cookie)
+        for s in struct_sizes:
+            index = marker + s - p
+            raw_file.seek(index)
+            header = raw_file.read(4)
+            # package usually starts with zlib compressed file, older packages have PYZ archive first
+            if header[:2] in ZLIB_HEADERS or header == b"PYZ\x00":
+                # Read the cookies starting at the marker.
+                raw_file.seek(marker)
+                cookie = raw_file.read(s)
+                # Read the package starting at the index
+                raw_file.seek(index)
+                package = raw_file.read(p)
+                return package, len(cookie)
 
     # if we haven't found it by now, we should give up
     raise InvalidFile
@@ -458,12 +470,14 @@ def main():
         print("[-] {} is not a file!".format(sys.argv[1]))
         sys.exit(1)
 
-    with open(sys.argv[1], "rb") as f:
-        content = f.read()
+    # Test file exists
+    file_path = sys.argv[1]
+    if not os.path.exists(file_path):
+        raise Exception(f"Provided path '{file_path}' does not exist")
 
     try:
         print("[+] Unpacking {}".format(sys.argv[1]))
-        r = process_pyinstaller(content)
+        r = process_pyinstaller(file_path)
 
         for key in r.keys():
             if key == "scripts":

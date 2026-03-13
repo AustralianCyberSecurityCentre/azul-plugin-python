@@ -1,4 +1,5 @@
 import os
+import tempfile
 import unittest
 
 from azul_runner.test_utils import FileManager
@@ -16,7 +17,9 @@ class Py2ExeTest(unittest.TestCase):
         """Test unpacking the executable."""
         fm = FileManager()
         # Malicious Windows 32 EXE, malware family redcap.
-        pe = Py2ExeUnpacker(fm.download_file_bytes("5cf8e07fb186ca108d5006f138c1f3477c7cac4e138728d0739075f38d129c1c"))
+        pe = Py2ExeUnpacker(
+            str(fm.download_file_path("5cf8e07fb186ca108d5006f138c1f3477c7cac4e138728d0739075f38d129c1c"))
+        )
         contents = pe.get_results()
         self.assertEqual("Python 2.7", contents.get("python_version"))
         self.assertEqual(1487054280, contents.get("build_time"))
@@ -35,9 +38,13 @@ class Py2ExeTest(unittest.TestCase):
     def test_py2exe_bad_exe(self):
         fm = FileManager()
         # Malicious Windows 32EXE, RAT.
-        data = fm.download_file_bytes("b5324ae4cec7bd7b837a726eccf140c1f0ebde82479db919546fe35f4b9439c7")
-        self.assertRaises(Py2ExeUnpackError, Py2ExeUnpacker, data)
+        file_path = str(fm.download_file_path("b5324ae4cec7bd7b837a726eccf140c1f0ebde82479db919546fe35f4b9439c7"))
+        self.assertRaises(Py2ExeUnpackError, Py2ExeUnpacker, file_path)
 
     def test_non_py2exe(self):
         """Test unpacking non-executable."""
-        self.assertRaises(Py2ExeUnpackError, Py2ExeUnpacker, b"random_content_that_is_not_a_valid_exe")
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(b"random_content_that_is_not_a_valid_exe")
+            f.flush()
+            f.seek(0)
+            self.assertRaises(Py2ExeUnpackError, Py2ExeUnpacker, f.name)
