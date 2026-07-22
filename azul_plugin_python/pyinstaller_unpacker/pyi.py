@@ -54,7 +54,7 @@ def process_pyinstaller(file_path: str) -> Optional[dict]:
     if toc is None:
         raise InvalidFile
 
-    results = {}
+    results: dict[str, Any] = {}
 
     if "py_version" in d:
         # python version is saved as an int of the string repr.
@@ -138,7 +138,7 @@ def build_pyc_header(py_version: tuple) -> bytes:
     return b"".join(header)
 
 
-def set_platform(lib: str, header: bytes) -> str:
+def set_platform(lib: str, header: bytes) -> str | None:
     """Determine the platform from the python lib used OR the header passed.
 
     :param lib: The library name
@@ -152,6 +152,7 @@ def set_platform(lib: str, header: bytes) -> str:
 
     if lib.startswith("libpython") or header[:3] == b"ELF":
         return "Linux"
+    return None
 
 
 def find_package(file_path: str) -> tuple[bytes, int]:
@@ -209,28 +210,30 @@ def parse_cookie(cookie: bytes) -> dict:
         # has a py version
         keys = ["magic", "length", "toc_index", "toc_length", "py_version", "py_lib"]
         values = struct.unpack(">8siiii64s", cookie)
-        x = dict(zip(keys, values, strict=False))
+        x: dict[str | bytes, int | str | bytes] = dict(zip(keys, values, strict=False))
     elif len(cookie) == 84:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length", "py_lib"]
         values = struct.unpack(">8siii64s", cookie)
-        x = dict(zip(keys, values, strict=False))
+        x: dict[str | bytes, int | str | bytes] = dict(zip(keys, values, strict=False))
     elif len(cookie) == 24:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length", "py_version"]
         values = struct.unpack(">8siiii", cookie)
-        x = dict(zip(keys, values, strict=False))
+        x: dict[str | bytes, int | str | bytes] = dict(zip(keys, values, strict=False))
     elif len(cookie) == 20:
         # v3 or earlier, no pyvers
         keys = ["magic", "length", "toc_index", "toc_length"]
         values = struct.unpack(">8siii", cookie)
-        x = dict(zip(keys, values, strict=False))
+        x: dict[str | bytes, int | str | bytes] = dict(zip(keys, values, strict=False))
     else:
         # cookie length is unknown, which is bad here
         raise InvalidFile
 
     # clean up null padding from python dll name
     if "py_lib" in x:
+        if not isinstance(x["py_lib"], bytes):
+            raise TypeError(f'Expected x["py_lib"] to be bytes, got {type(x["py_lib"])}')
         x["py_lib"] = x["py_lib"].decode("utf-8").rstrip("\x00")
 
     return x
@@ -321,6 +324,8 @@ def get_pyc_header(package: bytes, toc: dict[str, dict[str, Any]]) -> Optional[b
 
                 header = decompressed[:header_size]
 
+    if header is None:
+        raise TypeError("Expected header to be bytes, got None")
     header = header.replace(b"pyi0", b"\x00\x00\x00\x00")
     return header
 
@@ -478,6 +483,8 @@ def main():
     try:
         print("[+] Unpacking {}".format(sys.argv[1]))
         r = process_pyinstaller(file_path)
+        if r is None:
+            raise ValueError("Expected r to be a dict, got None")
 
         for key in r.keys():
             if key == "scripts":
@@ -537,6 +544,9 @@ def main():
         sys.exit(1)
     except UnsupportedFile as e:
         print("[-] Unsupported file format: {}".format(e))
+        sys.exit(1)
+    except ValueError as e:
+        print("[-] Could not parse process_pyinstaller results: {}".format(e))
         sys.exit(1)
 
 

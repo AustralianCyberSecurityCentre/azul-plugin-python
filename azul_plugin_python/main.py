@@ -78,7 +78,7 @@ class AzulPluginPython(BinaryPlugin):
         ),
     ]
 
-    def __init__(self, config: settings.Settings | dict = None):
+    def __init__(self, config: settings.Settings | dict | None = None):
         super().__init__(config)
 
         self.register_multiplugin("decompiler", None, self.execute_decompiler)
@@ -207,7 +207,7 @@ class AzulPluginPython(BinaryPlugin):
                 # imports_long = value[2]["standard"] + value[2]["external"]
                 self.add_feature_values("python_library", set(imports_short))
 
-        py_version: tuple[int, int] = contents.get("python_version")
+        py_version: tuple[int, int] | None = contents.get("python_version", None)
         if py_version and len(py_version) >= 2:
             self.add_feature_values("python_version", f"Python {py_version[0]}.{py_version[1]}")
 

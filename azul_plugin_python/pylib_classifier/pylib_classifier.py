@@ -77,6 +77,9 @@ class PyLibClassifier:
             known_standard_library=KNOWN_STDLIB,
         ).output
 
+        if report is None:
+            raise ValueError("Expected report to be str, got None")
+
         # remove import statements
         self.short_report = "# Used Imports (Short) - {}\n\n".format(self.filehash) + report.replace(
             "\nimport ", "\n"
@@ -95,6 +98,9 @@ class PyLibClassifier:
             import_heading_localfolder=LOCAL,
             known_standard_library=KNOWN_STDLIB,
         ).output
+
+        if report is None:
+            raise ValueError("Expected report to be str, got None")
 
         # remove import statements
         self.long_report = "# Used Imports (Long) - {}\n\n".format(self.filehash) + report.replace(
