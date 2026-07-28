@@ -14,31 +14,10 @@ from azul_plugin_python.decompiler.python_decompiler import (
     decompile_file,
 )
 
-test_script = 'print("Hello testing world!")'
+test_script = b"print('Hello testing world!')"
 test_script_name = "hello.py"
 test_precompiled_name = os.path.join("bytecode", "hello.cpython-37.pyc")
 test_precompiled_py310_name = os.path.join("bytecode", "dummy_file.cpython-310.pyc")
-
-
-class PyDecompile310Test(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        """Set up data required for testing."""
-        cls.pyc_path = os.path.join(os.path.dirname(__file__), test_precompiled_py310_name)
-
-    def test_fail_to_decompile(self):
-        """Test that fails to decompile the python code due to uncompyle6 lack of support."""
-        with open(self.pyc_path, "rb") as f:
-            results = decompile(f.read())
-            self.assertGreaterEqual(len(results.keys()), 2)
-            self.assertIn("error_msg", results)
-            self.assertIn("Unsupported Python version", results.get("error_msg"))
-
-    def test_fail_to_decompile_file(self):
-        results = decompile_file(self.pyc_path)
-        self.assertGreaterEqual(len(results.keys()), 2)
-        self.assertIn("error_msg", results)
-        self.assertIn("Unsupported Python version", results.get("error_msg"))
 
 
 class PyDecTest(unittest.TestCase):
@@ -47,9 +26,6 @@ class PyDecTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up data required for testing."""
-        # Note: due to uncompyle6 lack of python 3.9 support (our new default)
-        # we no longer generate the pyc during testing.
-        # A precompiled python3.7 version of the test script is now included.
         cls.pyc_path = os.path.join(os.path.dirname(__file__), test_precompiled_name)
 
         # read .pyc bytecode into memory
@@ -75,7 +51,7 @@ class PyDecTest(unittest.TestCase):
 
         # results only contains an error from Input
         self.assertIn("error_msg", results)
-        self.assertIn("Unknown magic number", results["error_msg"])
+        self.assertIn("Bad MAGIC!", results["error_msg"])
 
         # error caused due to input
         self.assertIn("error_type", results)
@@ -86,11 +62,11 @@ class PyDecTest(unittest.TestCase):
 
     def test_header_with_random_bytes(self):
         """Test with random bytes prepended with this Python version's magic number."""
-        # xdis raises ValueError, displays error message to stderr
+        # this is handled by decompile checking output, not stdout anymore
         results = decompile(self.fake_pyc)
 
         self.assertIn("error_msg", results)
-        self.assertEqual(results["error_msg"].split("\n")[0], "Traceback (most recent call last):")
+        self.assertTrue("Error loading file" in results["error_msg"])
 
         # error caused due to input
         self.assertIn("error_type", results)
@@ -104,8 +80,11 @@ class PyDecTest(unittest.TestCase):
         # xdis raises AttributeError, displays error message to stderr
         results = decompile(self.misversioned)
 
+        # self.assertEqual(results["error_msg"], "")
+
         self.assertIn("error_msg", results)
-        self.assertTrue("Unknown type" in results["error_msg"])
+        self.assertTrue("Error loading file" in results["error_msg"])
+        # self.assertTrue("Unknown type" in results["error_msg"])
 
         # error caused due to input
         self.assertIn("error_type", results)
@@ -122,14 +101,14 @@ class PyDecTest(unittest.TestCase):
         self.assertEqual(results["filename"], "hello.py")
 
         # version string
-        self.assertEqual(results["version"], 3.7)
+        self.assertEqual(results["version"], "3.7")
 
         # magic must match that of is this python version
         self.assertEqual(results["magic"], 3394)
 
         # test that source code matches
         # need to convert double quotes to single
-        self.assertIn(bytes(test_script, "utf-8"), results["source"])
+        self.assertIn(test_script, results["source"])
 
         self.assertEqual(results["timestamp"], datetime.datetime(2021, 5, 7, 1, 54, 19))
 
@@ -141,14 +120,14 @@ class PyDecTest(unittest.TestCase):
         self.assertEqual(results["filename"], "hello.py")
 
         # version string
-        self.assertEqual(results["version"], 3.7)
+        self.assertEqual(results["version"], "3.7")
 
         # magic must match that of is this python version
         self.assertEqual(results["magic"], 3394)
 
         # test that source code matches
         # need to convert double quotes to single
-        self.assertIn(bytes(test_script, "utf-8"), results["source"])
+        self.assertIn(test_script, results["source"])
 
         self.assertEqual(results["timestamp"], datetime.datetime(2021, 5, 7, 1, 54, 19))
 
@@ -168,13 +147,13 @@ class PyDecTest(unittest.TestCase):
             self.assertEqual(results["filename"], "hello.py")
 
             # version string
-            self.assertEqual(results["version"], 3.7)
+            self.assertEqual(results["version"], "3.7")
 
             # magic must match that of is this python version
             self.assertEqual(results["magic"], 3394)
 
             # test that source code matches
             # need to convert double quotes to single
-            self.assertIn(bytes(test_script, "utf-8"), results["source"])
+            self.assertIn(test_script, results["source"])
 
             self.assertEqual(results["timestamp"], datetime.datetime(2021, 5, 7, 1, 54, 19))

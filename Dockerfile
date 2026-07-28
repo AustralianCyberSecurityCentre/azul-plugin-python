@@ -32,6 +32,12 @@ RUN apt-get update && \
 COPY ./ /tmp/src
 RUN pip install uv
 
+# download, and compile pycdc
+WORKDIR /tmp/pycdc
+RUN git clone https://github.com/zrax/pycdc.git . \
+    && git checkout b4289760970dbc399684f1e155ec6d1ea1cc787e
+RUN cmake . && make -j"$(nproc)"
+
 # build and install package
 WORKDIR /tmp/src
 # Install all dependencies
@@ -92,4 +98,5 @@ RUN touch /tmp/testingpassed
 FROM base AS release
 # copy from `tester` stage to ensure testing is not skipped due to build optimisations.
 COPY --from=tester /tmp/testingpassed /tmp/
+COPY --from=builder /tmp/pycdc/pycdc /usr/local/bin/pycdc
 ENTRYPOINT ["azul-plugin-python"]

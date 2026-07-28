@@ -76,6 +76,11 @@ class AzulPluginPython(BinaryPlugin):
             desc="Platform used to build PyInstaller archive",
             type=FeatureType.String,
         ),
+        Feature(
+            name="partial_decompile",
+            desc="True/False value to indicate if the decompilation failed",
+            type=FeatureType.String,
+        ),
     ]
 
     def __init__(self, config: settings.Settings | dict = None):
@@ -90,6 +95,7 @@ class AzulPluginPython(BinaryPlugin):
 
     def execute_decompiler(self, job: Job):
         """Decompile the provided python bytecode."""
+        # job.event.entity.file_format = "code/python"
         if job.event.entity.file_format not in self.DECOMPILE_DATA_TYPES:
             return State(
                 label=State.Label.OPT_OUT,
@@ -114,17 +120,39 @@ class AzulPluginPython(BinaryPlugin):
 
         dc = decompile_file(file_path)
 
-        # check decompilation results
-        if "error_type" in dc and "error_msg" in dc and "Unsupported Python version" in dc.get("error_msg", ""):
-            # FUTURE completed-empty
-            # decompilation returned an unsupported error only returned an error, give up
-            return State(
-                State.Label.OPT_OUT, failure_name="unsupported_python_version", message=dc.get("error_msg", "")
-            )
+        print(dc)
 
-        if dc is None or (len(dc.keys()) == 2 and "error_type" in dc and "error_msg" in dc):
-            # decompilation only returned an error, give up
-            return State(State.Label.ERROR_EXCEPTION, message="decompilation failed")
+        if "error_type" in dc:
+            # dont want if there an error which prevents it from running
+            if "partial_decompile" in dc:
+                dc.pop("partial_decompile")
+
+            if dc["error_type"] in ["Magic", "Unsupported version"]:
+                return State(
+                    State.Label.OPT_OUT,
+                    failure_name="unsupported_python_version\n" + str(dc),
+                )
+
+            if dc["error_type"] == "Decompilation":
+                return State(
+                    State.Label.ERROR_EXCEPTION,
+                    message="decompilation failed",
+                )
+
+            if dc["error_type"] == "Opening file":
+                return State(
+                    State.Label.ERROR_RUNNER,
+                    message="pycdc failed to opening file",
+                )
+
+            if dc["error_type"] == "Loading file":
+                return State(
+                    State.Label.ERROR_INPUT,
+                    message="decompilation failed",
+                )
+
+            if dc["error_type"] == "Input":
+                return State(State.Label.ERROR_INPUT, message="Unable to load file")
 
         # got some decompilation results, so parent must be python bytecode
         parent_features["tag"] = ["python_bytecode"]
@@ -148,6 +176,9 @@ class AzulPluginPython(BinaryPlugin):
         if "path" in dc:
             # set path on child, overwriting previously set name if a full path exists
             child_features["filename"] = Filepath(dc["path"])
+
+        if "partial_decompile" in dc:
+            child_features["partial_decompile"] = str(dc["partial_decompile"])
 
         # if there's a child, set it up correctly
         if "error_type" not in dc and "error_msg" not in dc and "source" in dc:

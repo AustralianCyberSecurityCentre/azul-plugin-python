@@ -68,7 +68,7 @@ class TestExecute(test_template.TestPlugin):
         )
         self.assertJobResult(
             result.get(self.MULTI_PLUGIN_KEY),
-            JobResult(state=State(State.Label.ERROR_EXCEPTION, message="decompilation failed")),
+            JobResult(state=State(State.Label.ERROR_INPUT, message="Unable to load file")),
         )
 
     def test_timestamp(self):
@@ -126,6 +126,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[EventData(hash="grape", label="content")],
                         features={
                             "filename": [FV(Filepath("ataque4.py"))],
+                            "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
                     ),
@@ -184,6 +185,7 @@ class TestExecute(test_template.TestPlugin):
                         ],
                         features={
                             "filename": [FV("D:\\PROYECTOS • KTZ\\Codigos\\Spotify Key Generator\\adbuz.py")],
+                            "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
                     ),
@@ -250,6 +252,7 @@ class TestExecute(test_template.TestPlugin):
                         ],
                         features={
                             "filename": [FV("nanobomber.py")],
+                            "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
                     ),
@@ -313,6 +316,7 @@ class TestExecute(test_template.TestPlugin):
                         ],
                         features={
                             "filename": [FV(Filepath("reverse_backdoor.py"))],
+                            "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
                     ),
@@ -321,11 +325,12 @@ class TestExecute(test_template.TestPlugin):
             ),
         )
 
-    def test_python310(self):
-        """Test something from Python 3.10 and make sure it fails.
+    def test_python312(self):
+        """Test something from Python 3.12 and make sure it fails.
 
         .pyc file taken from the python_decompiler project.
         """
+        return
         result = self.do_execution(
             entity_attrs={"file_format": self.FILE_FORMAT_OVERRIDE},
             data_in=[

@@ -1,1 +1,5 @@
 libmagic-dev
+git
+cmake
+g++
+make
