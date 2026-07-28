@@ -130,7 +130,7 @@ class AzulPluginPython(BinaryPlugin):
             if dc["error_type"] in ["Magic", "Unsupported version"]:
                 return State(
                     State.Label.OPT_OUT,
-                    failure_name="unsupported_python_version\n" + str(dc),
+                    failure_name="unsupported_python_version",
                 )
 
             if dc["error_type"] == "Decompilation":
