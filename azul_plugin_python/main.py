@@ -67,6 +67,11 @@ class AzulPluginPython(BinaryPlugin):
         Feature("python_compile_time", "Python bytecode compile time", FeatureType.Datetime),
         Feature("filename", "Original script filename", FeatureType.Filepath),
         Feature("tag", "Any informational label about the sample", FeatureType.String),
+        Feature(
+            name="partial_decompile",
+            desc="True/False value to indicate if the decompilation failed",
+            type=FeatureType.String,
+        ),
         # unpackers
         Feature(name="build_time", desc="Build time of the executable or archive", type=FeatureType.Datetime),
         Feature(name="python_library", desc="Python library package within this archive", type=FeatureType.String),
@@ -74,11 +79,6 @@ class AzulPluginPython(BinaryPlugin):
         Feature(
             name="pyinstaller_build_platform",
             desc="Platform used to build PyInstaller archive",
-            type=FeatureType.String,
-        ),
-        Feature(
-            name="partial_decompile",
-            desc="True/False value to indicate if the decompilation failed",
             type=FeatureType.String,
         ),
     ]

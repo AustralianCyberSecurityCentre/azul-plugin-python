@@ -63,7 +63,6 @@ def decompile_file(file_path: str):
         # present as it causes inconsistencies with the decompilation hash.
         # splits by newline, trims the first 3 lines off, rebuilds string together again
         results["source"] = b"\n".join(pycdc_run.stdout.split(b"\n")[3:])
-        # results["source"] = "\n".join(stdout.split("\n")[3:])
     else:
         # backup just in case
         results["source"] = pycdc_run.stdout
@@ -77,7 +76,7 @@ def decompile_file(file_path: str):
     # its failing to decomp hello world on 3.13+ without being reported as failure
     # it is outright failing on 3.14
     major, minor = results["version"].split(".")
-    if major == 3 and minor > 12:
+    if int(major) == 3 and int(minor) > 12:
         results["error_msg"] = stderr
         results["error_type"] = "Unsupported version"
 
@@ -144,11 +143,6 @@ def extract_metadata(file: str):
     # version shenanigans
     # truncate .0 if theres a subversion; from testing this is always the case but just in case
     results["version"] = ".".join(map(str, pyc_meta[0][:2]))
-
-    # if pyc_meta[0][1] < 10:
-    #    results["version"] = f"{pyc_meta[0][0]}.0{pyc_meta[0][1]}"
-    # else:
-    #    results["version"] = f"{pyc_meta[0][0]}.{pyc_meta[0][1]}"
 
     # extract filename from xdis/pyc file, this requires get_code
     try:
