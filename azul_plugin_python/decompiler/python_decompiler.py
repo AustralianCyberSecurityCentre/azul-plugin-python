@@ -63,6 +63,7 @@ def decompile_file(file_path: str):
         # present as it causes inconsistencies with the decompilation hash.
         # splits by newline, trims the first 3 lines off, rebuilds string together again
         results["source"] = b"\n".join(pycdc_run.stdout.split(b"\n")[3:])
+        # results["source"] = "\n".join(stdout.split("\n")[3:])
     else:
         # backup just in case
         results["source"] = pycdc_run.stdout
@@ -105,7 +106,7 @@ def decompile_file(file_path: str):
 
     # Determine if the decompiler knows it is incomplete
     last_line = stdout.strip().split("\n")[-1]
-    results["partial_decompile"] = last_line == "# WARNING: Decompyle incomplete"
+    results["partial_decompile"] = str(last_line == "# WARNING: Decompyle incomplete")
 
     return results
 
