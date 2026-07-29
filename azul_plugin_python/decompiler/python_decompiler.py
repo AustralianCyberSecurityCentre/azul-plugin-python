@@ -17,14 +17,14 @@ import xdis.load
 class DecompileResults(TypedDict):
     """Decompile results to keep pipeline happy."""
 
-    error_type: str
-    error_msg: str
-    source: bytes
-    magic: int
-    filesize: int
-    version: str
-    path: str
-    filename: str
+    error_type: str | None
+    error_msg: str | None
+    source: bytes | None
+    magic: int | None
+    filesize: int | None
+    version: str | None
+    path: str | None
+    filename: str | None
 
 
 def _write(filename, content):
