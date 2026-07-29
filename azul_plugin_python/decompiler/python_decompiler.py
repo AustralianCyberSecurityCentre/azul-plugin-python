@@ -43,7 +43,7 @@ def decompile_file(file_path: str):
     :param file_path: path to the python bytecode
     :return: dict containing decompiled source and metadata
     """
-    TEMP_PYC_DIR = "pycdc"
+    TEMP_PYC_DIR = "/usr/local/bin/pycdc"
     pycdc_run = subprocess.run(  # noqa: S603
         [TEMP_PYC_DIR, file_path],
         stdout=subprocess.PIPE,
