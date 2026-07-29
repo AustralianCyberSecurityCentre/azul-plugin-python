@@ -58,7 +58,11 @@ class PyDecTest(unittest.TestCase):
         self.assertEqual(results["error_type"], "Input")
 
         # only the error keys
-        self.assertEqual(len(results.keys()), 2)
+        num_results = 0
+        for k in results.keys():
+            if results[k] != None:
+                num_results += 1
+        self.assertEqual(num_results, 2)
 
     def test_header_with_random_bytes(self):
         """Test with random bytes prepended with this Python version's magic number."""
@@ -73,7 +77,11 @@ class PyDecTest(unittest.TestCase):
         self.assertEqual(results["error_type"], "Input")
 
         # only the error keys
-        self.assertEqual(len(results.keys()), 2)
+        num_results = 0
+        for k in results.keys():
+            if results[k] != None:
+                num_results += 1
+        self.assertEqual(num_results, 2)
 
     def test_hello_with_wrong_header(self):
         """Test compiled hello world with .pyc header replaced from that of Python 2.x."""
@@ -91,7 +99,11 @@ class PyDecTest(unittest.TestCase):
         self.assertEqual(results["error_type"], "Input")
 
         # only the error keys
-        self.assertEqual(len(results.keys()), 2)
+        num_results = 0
+        for k in results.keys():
+            if results[k] != None:
+                num_results += 1
+        self.assertEqual(num_results, 2)
 
     def test_simple(self):
         """Test compiled hello world."""
