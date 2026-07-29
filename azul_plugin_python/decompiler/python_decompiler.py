@@ -55,7 +55,16 @@ def decompile_file(file_path: str):
     stderr = pycdc_run.stderr.decode("utf-8")
 
     # Get metadata
-    results: DecompileResults = DecompileResults()
+    results: DecompileResults = {
+        "error_type": None,
+        "error_msg": None,
+        "source": None,
+        "magic": None,
+        "filesize": None,
+        "version": None,
+        "path": None,
+        "filename": None,
+    }
     if len(stdout) > 1:
         results = extract_metadata(file_path)
     else:
