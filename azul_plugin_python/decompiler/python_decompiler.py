@@ -8,9 +8,21 @@ import tempfile
 from datetime import (
     datetime,
 )
+from typing import TypedDict
 
 import xdis
 import xdis.load
+
+
+class DecompileResults(TypedDict):
+    error_type: str
+    error_msg: str
+    source: bytes
+    magic: int
+    filesize: int
+    version: str
+    path: str
+    filename: str
 
 
 def _write(filename, content):
@@ -41,7 +53,7 @@ def decompile_file(file_path: str):
     stderr = pycdc_run.stderr.decode("utf-8")
 
     # Get metadata
-    results = {}
+    results: DecompileResults = {}
     if len(stdout) > 1:
         results = extract_metadata(file_path)
     else:
