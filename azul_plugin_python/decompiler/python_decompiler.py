@@ -15,6 +15,7 @@ import xdis.load
 
 
 class DecompileResults(TypedDict):
+    """Decompile results to keep pipeline happy"""
     error_type: str
     error_msg: str
     source: bytes
