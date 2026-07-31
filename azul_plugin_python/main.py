@@ -125,36 +125,21 @@ class AzulPluginPython(BinaryPlugin):
         if "error_type" in decompilation and "error_msg" in decompilation:
             decompilation.pop("partial_decompile", None)
 
-            known_errors = {
-                DecompileErrors.BadMagicNumber: [
-                    State.Label.OPT_OUT,
-                    DecompileErrors.BadMagicNumberMsg,
-                ],
-                DecompileErrors.PycdcLoading: [
-                    State.Label.ERROR_INPUT,
-                    DecompileErrors.PycdcLoadingMsg,
-                ],
-                DecompileErrors.PycHeader: [
-                    State.Label.OPT_OUT,
-                    DecompileErrors.PycHeaderMsg,
-                ],
-                DecompileErrors.XdisGetCode: [
-                    State.Label.ERROR_RUNNER,
-                    DecompileErrors.XdisGetCode,
-                ],
-                DecompileErrors.XdisPy3FilenameExtraction: [
-                    State.Label.ERROR_RUNNER,
-                    DecompileErrors.XdisPy3FilenameExtractionMsg,
-                ],
-                DecompileErrors.PythonVersion: [
-                    State.Label.OPT_OUT,
-                    DecompileErrors.PythonVersionMsg,
-                ],
-            }
+            if decompilation["error_type"] == DecompileErrors.BadMagicNumber:
+                return State(State.Label.OPT_OUT, failure_name=DecompileErrors.BadMagicNumberMsg)
 
-            et = decompilation["error_type"]
-            if et in known_errors:
-                return State(known_errors[et][0], failure_name=known_errors[et][1])
+            elif decompilation["error_type"] == DecompileErrors.PycdcLoading:
+                return State(State.Label.ERROR_INPUT, failure_name=DecompileErrors.PycdcLoadingMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.XdisGetCode:
+                return State(State.Label.ERROR_RUNNER, DecompileErrors.XdisGetCodeMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.XdisPy3FilenameExtraction:
+                return State(State.Label.ERROR_RUNNER, DecompileErrors.XdisPy3FilenameExtractionMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.PythonVersion:
+                return State(State.Label.OPT_OUT, DecompileErrors.PythonVersionMsg)
+
             else:
                 # catch-all for errors just in case
                 return State(
