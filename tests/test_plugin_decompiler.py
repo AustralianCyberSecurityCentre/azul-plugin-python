@@ -3,6 +3,7 @@
 import datetime
 
 from azul_runner import (
+    DataLabel,
     FV,
     Event,
     EventData,
@@ -123,7 +124,7 @@ class TestExecute(test_template.TestPlugin):
                         entity_type="binary",
                         entity_id="grape",
                         relationship={"action": "decompiled"},
-                        data=[EventData(hash="grape", label="content")],
+                        data=[EventData(hash="grape", label=DataLabel.CONTENT)],
                         features={
                             "filename": [FV(Filepath("ataque4.py"))],
                             "partial_decompile": [FV("False")],
@@ -180,7 +181,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="grape",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={
@@ -247,7 +248,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="grape",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={
@@ -311,7 +312,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="grape",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={
