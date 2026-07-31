@@ -69,7 +69,7 @@ class TestExecute(test_template.TestPlugin):
         )
         self.assertJobResult(
             result.get(self.MULTI_PLUGIN_KEY),
-            JobResult(state=State(State.Label.ERROR_INPUT, message="Unable to load file")),
+            JobResult(state=State(State.Label.ERROR_INPUT, failure_name="pycdc_cant_load_pyc")),
         )
 
     def test_timestamp(self):
