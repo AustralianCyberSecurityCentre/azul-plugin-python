@@ -5,17 +5,18 @@ import os
 import subprocess  # nosec B404
 import sys
 import tempfile
+from dataclasses import asdict, dataclass
 from datetime import (
     datetime,
 )
 from enum import StrEnum
-from typing import TypedDict
 
 import xdis
 import xdis.load
 
 
-class DecompileResults(TypedDict):
+@dataclass
+class DecompileResults:
     """Decompile results to keep pipeline happy."""
 
     error_type: str | None
@@ -26,6 +27,7 @@ class DecompileResults(TypedDict):
     version: str | None
     path: str | None
     filename: str | None
+    timestamp: datetime | None
 
 
 class DecompileErrors(StrEnum):
@@ -96,21 +98,22 @@ def decompile_file(file_path: str):
         }
 
     # Get metadata
-    results: DecompileResults = {
-        "error_type": None,
-        "error_msg": None,
-        "source": None,
-        "magic": None,
-        "filename": None,
-        "filesize": None,
-        "path": None,
-        "version": None,
-    }
-    results = extract_metadata(file_path)
+    metadata = extract_metadata(file_path)
+    results: DecompileResults = DecompileResults(
+        error_type=metadata.get("error_type", None),
+        error_msg=metadata.get("error_msg", None),
+        source=metadata.get("source", None),
+        magic=metadata.get("magic", None),
+        filename=metadata.get("filename", None),
+        filesize=metadata.get("filesize", None),
+        path=metadata.get("path", None),
+        version=metadata.get("version", None),
+        timestamp=metadata.get("timestamp", None),
+    )
 
     # handle any errors
-    if "error_type" in results and "error_msg" in results:
-        return results
+    if "error_type" in metadata and "error_msg" in metadata:
+        return asdict(results)
 
     # pycdc generates "headers" that contain a filename, this is the parsed file
     # not the pyc original file name. this trims that out of the source if they're both
@@ -122,19 +125,19 @@ def decompile_file(file_path: str):
         and split_src[1].startswith("# File: ")
         and split_src[2] == ""
     ):
-        results["source"] = b"\n".join(pycdc_run.stdout.split(b"\n")[3:])
+        results.source = b"\n".join(pycdc_run.stdout.split(b"\n")[3:])
     else:
         # backup just in case
-        results["source"] = pycdc_run.stdout
+        results.source = pycdc_run.stdout
 
     # There is basically always an stderr message, but I think its worth logging it regardless
-    results["stdout_msg"] = stdout
-    results["stderr_msg"] = stderr
+    results.stdout_msg = stdout
+    results.stderr_msg = stderr
 
     # Since pycdc isnt correctly checking for broken versions
     # its failing to decomp hello world on 3.13+ without being reported as failure
     # it is outright failing on 3.14
-    major, minor = results["version"].split(".")
+    major, minor = results.version.split(".")
     if int(major) == 3 and int(minor) > 12:
         return {
             "error_type": DecompileErrors.PythonVersion,
@@ -143,9 +146,9 @@ def decompile_file(file_path: str):
 
     # Determine if the decompiler knows it is incomplete
     last_line = stdout.strip().split("\n")[-1]
-    results["partial_decompile"] = str(last_line == "# WARNING: Decompyle incomplete")
+    results.partial_decompile = str(last_line == "# WARNING: Decompyle incomplete")
 
-    return results
+    return asdict(results)
 
 
 def decompile(content: bytes):
