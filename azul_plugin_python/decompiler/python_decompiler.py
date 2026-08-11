@@ -28,6 +28,9 @@ class DecompileResults:
     path: str | None
     filename: str | None
     timestamp: datetime | None
+    partial_decompile: bool | None
+    stdout_msg: str | None
+    stderr_msg: str | None
 
 
 class DecompileErrors(StrEnum):
@@ -109,6 +112,9 @@ def decompile_file(file_path: str):
         path=metadata.get("path", None),
         version=metadata.get("version", None),
         timestamp=metadata.get("timestamp", None),
+        partial_decompile=None,
+        stdout_msg=stdout,
+        stderr_msg=stderr,
     )
 
     # handle any errors
@@ -130,19 +136,16 @@ def decompile_file(file_path: str):
         # backup just in case
         results.source = pycdc_run.stdout
 
-    # There is basically always an stderr message, but I think its worth logging it regardless
-    results.stdout_msg = stdout
-    results.stderr_msg = stderr
-
     # Since pycdc isnt correctly checking for broken versions
     # its failing to decomp hello world on 3.13+ without being reported as failure
     # it is outright failing on 3.14
-    major, minor = results.version.split(".")
-    if int(major) == 3 and int(minor) > 12:
-        return {
-            "error_type": DecompileErrors.PythonVersion,
-            "error_msg": DecompileErrors.PythonVersionMsg,
-        }
+    if type(results.version) is str:
+        major, minor = results.version.split(".")
+        if int(major) == 3 and int(minor) > 12:
+            return {
+                "error_type": DecompileErrors.PythonVersion,
+                "error_msg": DecompileErrors.PythonVersionMsg,
+            }
 
     # Determine if the decompiler knows it is incomplete
     last_line = stdout.strip().split("\n")[-1]
