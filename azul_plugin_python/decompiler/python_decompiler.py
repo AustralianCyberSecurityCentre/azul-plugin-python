@@ -2,7 +2,6 @@
 
 import hashlib
 import os
-import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
