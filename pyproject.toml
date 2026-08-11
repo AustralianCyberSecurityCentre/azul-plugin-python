@@ -77,6 +77,9 @@ version_scheme = "only-version"
 [tool.hatch.version.fallback]
 version = "0.0.0"
 
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
+
 [dependency-groups]
 dev = [
     "azul-runner[test-utils]>=9.0.38",

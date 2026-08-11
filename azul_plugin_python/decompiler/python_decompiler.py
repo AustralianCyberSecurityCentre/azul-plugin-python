@@ -76,7 +76,7 @@ def decompile_file(file_path: str):
     :return: dict containing decompiled source and metadata
     """
     pycdc_run = subprocess.run(  # noqa: S603
-        ["/usr/local/bin/pycdc", file_path],
+        ["./pycdc", file_path],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
