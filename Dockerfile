@@ -62,7 +62,6 @@ ARG GID=21000
 RUN groupadd -g $GID azul && useradd --create-home --shell /bin/bash -u $UID -g $GID azul
 USER azul
 COPY --from=builder /usr/local /usr/local
-COPY --from=builder /tmp/pycdc/pycdc /usr/local/bin/pycdc
 
 # run tests during build to verify dockerfile has all requirements
 FROM base AS tester

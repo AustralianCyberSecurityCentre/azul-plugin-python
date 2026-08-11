@@ -28,7 +28,7 @@ class AzulPluginPython(BinaryPlugin):
     """Decompile and resubmit python bytecode."""
 
     CONTACT = "ASD's ACSC"
-    VERSION = "2026.07.31"
+    VERSION = "2026.08.11"
 
     DECOMPILE_DATA_TYPES = [
         "python/bytecode",
