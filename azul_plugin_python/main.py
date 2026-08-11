@@ -104,20 +104,6 @@ class AzulPluginPython(BinaryPlugin):
         child_features = {}
         parent_features = {}
         data = job.get_data()
-        # test file contents for known python magic bytes
-
-        """
-        if data.read(4) not in xdis.magics.versions.keys():
-            # unknown magic or not a .pyc file, so skip processing
-            return State(
-                label=State.Label.OPT_OUT,
-                failure_name="unknown_python_magic_bytes",
-                message="python magic bytes unknown or not a pyc file",
-            )
-        """
-
-        # rewind and get everything
-        data.seek(0)
         file_path = data.get_filepath()
 
         decompilation = decompile_file(file_path)
