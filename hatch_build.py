@@ -17,7 +17,7 @@ class CustomBuildHook(BuildHookInterface):
         """Downloads, builds, and compiles pycdc for use in plugin."""
         root = Path(self.root)
         source = root / "_pycdc" / "source"
-        pycdc_build = root / ".venv" / "bin" / "pycdc"
+        stage = root / "_pycdc" / "binaries"
 
         # download/clone the repo
         if not source.is_dir():
@@ -30,7 +30,18 @@ class CustomBuildHook(BuildHookInterface):
         subprocess.run(["make"], cwd=source, check=True)  # noqa: S607
 
         # since cmake is unreliable for checking output
-        if not pycdc_build.is_file():
-            raise Exception("No compiled pycdc found")
+        if not (source / "pycdc").is_file():
+            raise RuntimeError("No compiled pycdc found")
 
-        shutil.move(pycdc_build, (root / "pycdc"))
+        stage.mkdir(parents=True,exist_ok=True)
+        for name in ("pycdc", "pycdas"):
+            built = source / name
+            if not built.is_file():
+                raise RuntimeError(f"{name} not found at {built}")
+
+            shutil.copy2(built, stage / name)
+            (stage / name).chmod(0o755)
+
+        build_data["shared_scripts"] = {str(stage.relative_to(root)): ""}
+        build_data["pure_python"] = False
+        build_data["infer_tag"] = True
