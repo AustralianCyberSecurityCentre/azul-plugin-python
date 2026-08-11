@@ -28,7 +28,7 @@ class DecompileResults:
     path: str | None
     filename: str | None
     timestamp: datetime | None
-    partial_decompile: bool | None
+    partial_decompile: str | None  # annoying
     stdout_msg: str | None
     stderr_msg: str | None
 
