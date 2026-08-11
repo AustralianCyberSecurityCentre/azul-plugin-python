@@ -2,6 +2,7 @@
 
 import hashlib
 import os
+import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
@@ -78,8 +79,9 @@ def decompile_file(file_path: str):
     :param file_path: path to the python bytecode
     :return: dict containing decompiled source and metadata
     """
+    pycdc_path = pathlib.Path.cwd() / "pycdc"
     pycdc_run = subprocess.run(  # noqa: S603
-        ["./pycdc", file_path],
+        [pycdc_path, file_path],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
