@@ -79,7 +79,7 @@ def decompile_file(file_path: str):
     :param file_path: path to the python bytecode
     :return: dict containing decompiled source and metadata
     """
-    pycdc_path = pathlib.Path.cwd() / "pycdc"
+    pycdc_path = "pycdc"
     pycdc_run = subprocess.run(  # noqa: S603
         [pycdc_path, file_path],
         stdout=subprocess.PIPE,

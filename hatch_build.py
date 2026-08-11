@@ -17,7 +17,7 @@ class CustomBuildHook(BuildHookInterface):
         """Downloads, builds, and compiles pycdc for use in plugin."""
         root = Path(self.root)
         source = root / "_pycdc" / "source"
-        pycdc_build = source / "pycdc"
+        pycdc_build = root / ".venv" / "bin" / "pycdc"
 
         # download/clone the repo
         if not source.is_dir():
