@@ -33,7 +33,7 @@ class CustomBuildHook(BuildHookInterface):
         if not (source / "pycdc").is_file():
             raise RuntimeError("No compiled pycdc found")
 
-        stage.mkdir(parents=True,exist_ok=True)
+        stage.mkdir(parents=True, exist_ok=True)
         for name in ("pycdc", "pycdas"):
             built = source / name
             if not built.is_file():
