@@ -150,8 +150,8 @@ def decompile_file(file_path: str):
             }
 
     # Determine if the decompiler knows it is incomplete
-    last_line = stdout.strip().split("\n")[-1]
-    results.partial_decompile = str(last_line == "# WARNING: Decompyle incomplete")
+    # This isn't always on the last line
+    results.partial_decompile = str("# WARNING: Decompyle incomplete" in stdout)
 
     return results.model_dump(exclude_none=True, exclude_defaults=True)
 
