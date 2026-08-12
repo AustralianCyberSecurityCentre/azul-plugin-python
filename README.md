@@ -2,7 +2,7 @@
 
 Python bytecode decompiler for Azul 3.
 
-Decompiles python code up to Python version 3.9
+Decompiles python code up to Python version 3.12
 
 ## Development Installation
 
@@ -50,60 +50,47 @@ azul-plugin-python --server http://azul-dispatcher.localnet/
 
 ## Issues
 
-- Attempts are made to normalise the `uncompyle6` output to prevent output hash
+- Attempts are made to normalise the `pycdc` output to prevent output hash
   mismatches but they may change on minor updates. This will break tests.
-
-## Why wrap `uncompyle6`
-
-The two main advantages that `python_decompiler` provides over using `uncompyle6` are
-
-- It allows in memory handling of decompilation, with no need to read or write temporary files
-- It is easier to call from other scripts
 
 ### Example
 
-    python_decompiler samples/NetflixChecker.pyc
+    python_decompiler samples/netflix.cpython-312.pyc
 
 Yields:
 
-    Decompiling samples/NetflixChecker.pyc
-    Magic number recognised - Python 3.7.0
-    version: 3.7
-    magic: 3394
-    filename: NetflixChecker.py
-    15009 bytes written to NetflixChecker.py (2cd1471c3db139374f06ffdf35af0c35)
+    Magic number recognised - Python 3.12.0rc2
+    Decompiling...
+    6781 bytes written to netflix.py (78d48f1eb0a6f8bb3cc66d3b94d8d50e)
+    magic: 3531
+    filesize: 6119
+    version: 3.12
+    path: netflix.py
+    filename: netflix.py
+    timestamp: 2026-08-12T03:53:40
+    partial_decompile: True
 
 ### Partial decompilation
 
-In cases where `uncomplye6` may not be able to completely decompile some Python bytecode files. In those
-cases `python_decompiler` will return as much of the original source as `uncompyle6` could decompile.
+In cases where `pycdc` may not be able to completely decompile some Python bytecode files. In those
+cases `python_decompiler` will return as much of the original source as `pycdc` could decompile.
+This is indicated by the flag `partial_decompilation`, and a comment inline that notify the user
+that the decompilation could not be completed.
 
-    Decompiling samples/nanobomber.pyc
-    Magic number recognised - Python 3.8.0rc1+
-    Decompiling...
-    magic: 3344
-    version: 3.8
-    filename: nanobomber.py
-    15036 bytes written to nanobomber.py (c61a4738b79a5de5f6685257b10ba85b)
-    error_type: Decompile
-
-nanobomber.pyc could not be completely decompiled, examining the tail of the output file (nanobomber.py)
-shows comments `uncompyle6` has appended comments to the source it was able to decompile:
-
-    # NOTE: have internal decompilation grammar errors.
-    # Use -t option to show full context.
-    # not in loop:
-    #       break (2)
-    #      0.  L. 340      3492  POP_EXCEPT
-    #      1.          3494_3496  BREAK_LOOP         3508  'to 3508'
-
-    # file /tmp/tmpcdnm37ry.pyc
-    # Deparsing hit an internal grammar-rule bug
+```python
+...
+def sha256_of_file(path = None):
+Unsupported opcode: MAKE_CELL (225)
+    '''Return the SHA-256 hex digest of a file.'''
+    pass
+# WARNING: Decompyle incomplete
+...
+```
 
 
 ### PyInstaller
 
-Extracts Python bytecode and libraries from PyInstaller executables. Python bytecode may be decompilable with existing Python decompilers (uncompyle6 or decompyle3).
+Extracts Python bytecode and libraries from PyInstaller executables. Python bytecode may be decompilable with existing Python decompiler (pycdc).
 
 Currently configured to process:
 
@@ -114,18 +101,14 @@ Currently configured to process:
 Example Output:
 
 ```
------ AzulPluginUnbox-pyinstaller results -----
+----- AzulPluginPython-unpacker results -----
 COMPLETED
 
 events (3)
 
-event for binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af:None
+event for 12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af:None
   {}
   output features:
-                     box_count: 2
-                  box_filepath: PYZ-00.pyz
-                                unknown_unicode_filename.pyc
-                      box_type: pyinstaller
     pyinstaller_build_platform: Windows
                 python_library: __future__
                                 _compat_pickle
@@ -201,30 +184,27 @@ event for binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4a
                                 zipfile
                 python_version: Python 3.12
 
-event for binary:95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995:None
-  {'action': 'unpacked'}
-  child of binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
-  output data streams (1):
-    1616841 bytes - EventData(hash='95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995', label='content')
-  output features:
-    filename: PYZ-00.pyz
-
-event for binary:f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4:None
-  {'action': 'unpacked'}
-  child of binary:12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
+event for f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4:None
+  {'action': 'unpacked_pyinstaller'}
+  child of 12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
   output data streams (1):
     1470 bytes - EventData(hash='f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4', label='content')
   output features:
     filename: unknown_unicode_filename.pyc
 
+event for 95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995:None
+  {'action': 'unpacked_pyinstaller'}
+  child of 12a04feb4e388ad3a3e16ce8f1798dd4927af2828c2a1ae1fcbd8acf77e4e4af
+  output data streams (1):
+    1616841 bytes - EventData(hash='95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995', label='content')
+  output features:
+    filename: PYZ-00.pyz
+
 Feature key:
-  box_count:  Number of items found in the box
-  box_filepath:  This entity contains this filepath
-  box_type:  The binary is of this box type
-  filename:  The name of the file in its parent archive
+  filename:  Original script filename
   pyinstaller_build_platform:  Platform used to build PyInstaller archive
   python_library:  Python library package within this archive
-  python_version:  Python version used to build archive
+  python_version:  Python version of the byte code
 ```
 
 ## Python Package management
