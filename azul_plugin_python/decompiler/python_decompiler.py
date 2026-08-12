@@ -5,7 +5,7 @@ import os
 import subprocess  # nosec B404
 import sys
 import tempfile
-from dataclasses import asdict, dataclass
+# from dataclasses import asdict, dataclass
 from datetime import (
     datetime,
 )
@@ -13,10 +13,9 @@ from enum import StrEnum
 
 import xdis
 import xdis.load
+from pydantic import BaseModel
 
-
-@dataclass
-class DecompileResults:
+class DecompileResults(BaseModel):
     """Decompile results to keep pipeline happy."""
 
     error_type: str | None
@@ -120,7 +119,7 @@ def decompile_file(file_path: str):
 
     # handle any errors
     if "error_type" in metadata and "error_msg" in metadata:
-        return asdict(results)
+        return results.model_dump(exclude_none=True, exclude_defaults=True)
 
     # pycdc generates "headers" that contain a filename, this is the parsed file
     # not the pyc original file name. this trims that out of the source if they're both
@@ -152,7 +151,7 @@ def decompile_file(file_path: str):
     last_line = stdout.strip().split("\n")[-1]
     results.partial_decompile = str(last_line == "# WARNING: Decompyle incomplete")
 
-    return asdict(results)
+    return results.model_dump(exclude_none=True, exclude_defaults=True)
 
 
 def decompile(content: bytes):
