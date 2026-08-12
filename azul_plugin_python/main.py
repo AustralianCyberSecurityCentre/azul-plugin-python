@@ -94,7 +94,6 @@ class AzulPluginPython(BinaryPlugin):
 
     def execute_decompiler(self, job: Job):
         """Decompile the provided python bytecode."""
-        # job.event.entity.file_format = "code/python"
         if job.event.entity.file_format not in self.DECOMPILE_DATA_TYPES:
             return State(
                 label=State.Label.OPT_OUT,
