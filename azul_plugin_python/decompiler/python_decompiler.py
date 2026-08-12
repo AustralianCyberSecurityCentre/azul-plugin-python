@@ -5,6 +5,7 @@ import os
 import subprocess  # nosec B404
 import sys
 import tempfile
+
 # from dataclasses import asdict, dataclass
 from datetime import (
     datetime,
@@ -14,6 +15,7 @@ from enum import StrEnum
 import xdis
 import xdis.load
 from pydantic import BaseModel
+
 
 class DecompileResults(BaseModel):
     """Decompile results to keep pipeline happy."""
