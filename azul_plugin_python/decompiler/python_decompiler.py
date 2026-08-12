@@ -61,6 +61,9 @@ class DecompileErrors(StrEnum):
     # python version
     PythonVersion = "Unsupported Python version (3.12+)"
     PythonVersionMsg = "unsupported_version"
+    # empty source
+    EmptySource = "Decompiler run but produced stdout containing 0 bytes"
+    EmptySourceMsg = "0_byte_source"
 
 
 def _write(filename, content):

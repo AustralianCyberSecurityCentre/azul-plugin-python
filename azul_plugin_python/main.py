@@ -117,13 +117,13 @@ class AzulPluginPython(BinaryPlugin):
                 return State(State.Label.ERROR_INPUT, failure_name=DecompileErrors.PycdcLoadingMsg)
 
             elif decompilation["error_type"] == DecompileErrors.XdisGetCode:
-                return State(State.Label.ERROR_RUNNER, DecompileErrors.XdisGetCodeMsg)
+                return State(State.Label.ERROR_RUNNER, failure_name=DecompileErrors.XdisGetCodeMsg)
 
             elif decompilation["error_type"] == DecompileErrors.XdisPy3FilenameExtraction:
-                return State(State.Label.ERROR_RUNNER, DecompileErrors.XdisPy3FilenameExtractionMsg)
+                return State(State.Label.ERROR_RUNNER, failure_name=DecompileErrors.XdisPy3FilenameExtractionMsg)
 
             elif decompilation["error_type"] == DecompileErrors.PythonVersion:
-                return State(State.Label.OPT_OUT, DecompileErrors.PythonVersionMsg)
+                return State(State.Label.OPT_OUT, failure_name=DecompileErrors.PythonVersionMsg)
 
             else:
                 # catch-all for errors just in case
@@ -131,6 +131,14 @@ class AzulPluginPython(BinaryPlugin):
                     State.Label.ERROR_RUNNER,
                     failure_name="unknown error",
                     message=f"{decompilation['error_type']}:\n\n{decompilation['error_msg']}",
+                )
+
+        if "source" in decompilation:
+            if len(decompilation["source"]) == 0:
+                return State(
+                    State.Label.ERROR_RUNNER,
+                    failure_name=DecompileErrors.EmptySourceMsg,
+                    message=DecompileErrors.EmptySource,
                 )
 
         # got some decompilation results, so parent must be python bytecode
@@ -160,7 +168,7 @@ class AzulPluginPython(BinaryPlugin):
             child_features["partial_decompile"] = str(decompilation["partial_decompile"])
 
         # if there's a child, set it up correctly
-        if "error_type" not in decompilation and "error_msg" not in decompilation and "source" in decompilation:
+        if "source" in decompilation:
             # add the decompiled output as a text stream on the parent
             # leave comments in, for now, as add context but might cause some stream variability
             self.add_data(label=DataLabel.TEXT, data=decompilation["source"], tags={"language": "python"})
