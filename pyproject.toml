@@ -38,7 +38,7 @@ dependencies = [
 
 [project.scripts]
 azul-plugin-python = "azul_plugin_python.main:main"
-python_decompiler = "azul_plugin_python.python_decompiler:cmd"
+python_decompiler = "azul_plugin_python.decompiler.python_decompiler:cmd"
 pyi_unpacker = "azul_plugin_python.pyinstaller_unpacker.pyi:main"
 pyz_unpacker = "azul_plugin_python.pyinstaller_unpacker.pyz:main"
 
