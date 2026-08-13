@@ -3,6 +3,7 @@
 import datetime
 
 from azul_runner import (
+    DataLabel,
     FV,
     Event,
     EventData,
@@ -222,7 +223,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="dcfda9fa44c91e8567d81e224f30dc373e07043bd9a32c0f127f5b065dcc3572",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("st_main.pyc")]},
@@ -258,7 +259,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="f13fa6cf3cd72187030e47025344820bd55b2c7d8cb78268e91beeb20168a94e",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("ZJRM.pyc")]},
@@ -389,7 +390,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="6c1d9c1084def7141ad31ce082fd910e5463f80516a48a3ca112381b7904c197",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("proxy.pyc")]},
@@ -524,7 +525,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="c5aafcf2d2c7c55ee6f774e40bf0d6b6358ef1ae2b5b428d5a2ee9f1927b9187",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("basicRAT_client.pyc")]},
@@ -536,7 +537,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="5a96cd1360c28721ef7e9038812cd1ec5e635573794667a6a74c25f7a509d756",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("out00-PYZ.pyz")]},
@@ -696,7 +697,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="3329a2579f8595fcae5d0a054cfa84ba6323dd19d1bde9255ebdc1d14928622e",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("cofix.pyc")]},
@@ -708,7 +709,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="cbba89ee8d76b7d7881d6c142b834236d16ff0935edf89fab397c600e7416c79",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("PYZ-00.pyz")]},
@@ -894,7 +895,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="7058d4279ba9504227c4ff30a583ff9e2f7565a58091888cb4b7c317979da059",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("useUnicode.py")]},
@@ -906,7 +907,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="7b864503af40cb16e0267d42370bb1b508e59543a0b6fc04e316dd9c37d3869f",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("runtime.py")]},
@@ -918,7 +919,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="685a37b222edece8618c7aeed8b7053dd9932d78b87f8c1ea48a1cf57267ff0e",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("outPYZ1.pyz")]},
@@ -1057,7 +1058,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="bea51c445789c60e92096ab6f49a2f38edeb1d6fd406de1e48746919df5249e3",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("secret.pyc")]},
@@ -1069,7 +1070,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="821254775783f5b70c7d8ff8d0ab2f537cea61275dd27f250dd05ea61f589cef",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("PYZ-00.pyz")]},
@@ -1229,7 +1230,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="d1d6f009f131784abc513b06a319b540ae7bd6a0490c0071ce4f1953b58fa524",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("Paypal.pyc")]},
@@ -1241,7 +1242,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="a01fc433b2f13ca41f89207b38fb9a10cce49155857836a400064c17d6fa06a3",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("PYZ-00.pyz")]},
@@ -1355,7 +1356,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="f4aa6bd7b64c46ace259fae65d1f24ea2f47f380f67b2394a53ed84defcdc6b4",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("unknown_unicode_filename.pyc")]},
@@ -1367,7 +1368,7 @@ class TestExecute(test_template.TestPlugin):
                         data=[
                             EventData(
                                 hash="95d840c8a9e9b100e6bfbfabb33875c2fb66f4d3e6a80a014a36c47a9afad995",
-                                label="content",
+                                label=DataLabel.CONTENT,
                             )
                         ],
                         features={"filename": [FV("PYZ-00.pyz")]},

@@ -1,18 +1,69 @@
-"""Wraps uncompyle6 command-line tool to provide a simple decompiler library."""
+"""Wraps pycdc command-line tool to provide a simple decompiler library."""
 
 import hashlib
 import os
-import re
+import subprocess  # nosec B404
 import sys
 import tempfile
-import traceback
-from datetime import datetime
-from io import StringIO
 
-import pytz
+# from dataclasses import asdict, dataclass
+from datetime import (
+    datetime,
+)
+from enum import StrEnum
+
 import xdis
-from tzlocal import get_localzone
-from uncompyle6.main import main
+import xdis.load
+from pydantic import BaseModel
+
+
+class DecompileResults(BaseModel):
+    """Decompile results to keep pipeline happy."""
+
+    error_type: str | None
+    error_msg: str | None
+    source: bytes | None
+    magic: int | None
+    filesize: int | None
+    version: str | None
+    path: str | None
+    filename: str | None
+    timestamp: datetime | None
+    partial_decompile: str | None  # annoying
+    stdout_msg: str | None
+    stderr_msg: str | None
+
+
+class DecompileErrors(StrEnum):
+    """To allow consistent error messages."""
+
+    def __repr__(self):
+        """Return simple repr."""
+        return f"DecompileErrors.{self.name}"
+
+    # Bad magic number
+    # Fires on basically all errors of bad files.
+    # Unless the first 4 bytes match the magic numbers this will fire
+    BadMagicNumber = "Bad magic"
+    BadMagicNumberMsg = "unknown_magic_bytes"
+    # pycdc loading
+    PycdcLoading = "Decompiler loading error"
+    PycdcLoadingMsg = "pycdc_cant_load_pyc"
+    # xdis bad header
+    PycHeader = ".pyc Header"
+    PycHeaderMsg = "bad_header"
+    # xdis unable load code
+    XdisGetCode = "xdis get_code"
+    XdisGetCodeMsg = "xdis_get_code_failed"
+    # xdis python3 get filename
+    XdisPy3FilenameExtraction = "xdis data extraction failed"
+    XdisPy3FilenameExtractionMsg = "xdis_filename_extraction"
+    # python version
+    PythonVersion = "Unsupported Python version (3.12+)"
+    PythonVersionMsg = "unsupported_version"
+    # empty source
+    EmptySource = "Decompiler run but produced stdout containing 0 bytes"
+    EmptySourceMsg = "0_byte_source"
 
 
 def _write(filename, content):
@@ -25,72 +76,87 @@ def _write(filename, content):
         f.write(content)
 
 
-def _ts_to_dt(ts):
-    """Convert timestamp to datetime object.
-
-    Handles conversion from localtime to UTC.
-    :param ts: ISO8601 timestamp
-    :return: naive datetime object
-    """
-    tz = get_localzone()
-    local = datetime.fromisoformat(ts).astimezone(tz)
-    return local.astimezone(pytz.utc).replace(tzinfo=None)
-
-
 def decompile_file(file_path: str):
     """Decompile the bytecode and return source and some metadata.
 
     :param file_path: path to the python bytecode
     :return: dict containing decompiled source and metadata
     """
-    so = StringIO()
-    se = StringIO()
-    created_sym_link = False
-    try:
-        # capture library's stdout/stderr
-        sys.stdout = so
-        sys.stderr = se
+    pycdc_path = "pycdc"
+    pycdc_run = subprocess.run(  # noqa: S603
+        [pycdc_path, file_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
-        # write content to tmp
-        # file needs a .pyc extension for uncompyle6
-        if not file_path.endswith(".pyc"):
-            os.link(file_path, file_path + ".pyc")
-            file_path += ".pyc"
-            created_sym_link = True
-        main(
-            os.path.dirname(file_path),
-            None,
-            compiled_files=[os.path.basename(file_path)],
-            source_files=[],
-            outfile=None,
-        )
-    except Exception as ex:
-        traceback.print_exception(type(ex), ex, ex.__traceback__)
-    finally:
-        # restore filehandles
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-        if created_sym_link:
-            os.remove(file_path)
+    # easier to work with
+    stdout = pycdc_run.stdout.decode("utf-8")
+    stderr = pycdc_run.stderr.decode("utf-8")
 
-    results = {}
+    # handle decompile/metadata errorsazul_plugin_python/decompiler/python_decompiler.py
+    if stderr.startswith("Bad MAGIC!"):
+        return {
+            "error_type": DecompileErrors.BadMagicNumber,
+            "error_msg": DecompileErrors.BadMagicNumberMsg,
+        }
+    elif "Error loading file" in stderr:
+        return {
+            "error_type": DecompileErrors.PycdcLoading,
+            "error_msg": DecompileErrors.PycdcLoadingMsg,
+        }
 
-    # unpack output from decompilation
-    if len(so.getvalue()) > 1:
-        results = extract_metadata(so.getvalue().encode("utf-8") + se.getvalue().encode("utf-8"))
+    # Get metadata
+    metadata = extract_metadata(file_path)
+    results: DecompileResults = DecompileResults(
+        error_type=metadata.get("error_type", None),
+        error_msg=metadata.get("error_msg", None),
+        source=metadata.get("source", None),
+        magic=metadata.get("magic", None),
+        filename=metadata.get("filename", None),
+        filesize=metadata.get("filesize", None),
+        path=metadata.get("path", None),
+        version=metadata.get("version", None),
+        timestamp=metadata.get("timestamp", None),
+        partial_decompile=None,
+        stdout_msg=stdout,
+        stderr_msg=stderr,
+    )
+
+    # handle any errors
+    if "error_type" in metadata and "error_msg" in metadata:
+        return results.model_dump(exclude_none=True, exclude_defaults=True)
+
+    # pycdc generates "headers" that contain a filename, this is the parsed file
+    # not the pyc original file name. this trims that out of the source if they're both
+    # present as it causes inconsistencies with the decompilation hash.
+    # splits by newline, trims the first 3 lines off, rebuilds string together again
+    split_src = stdout.split("\n")
+    if (
+        split_src[0] == "# Source Generated with Decompyle++"
+        and split_src[1].startswith("# File: ")
+        and split_src[2] == ""
+    ):
+        results.source = b"\n".join(pycdc_run.stdout.split(b"\n")[3:])
     else:
-        results["error_type"] = "Input"
+        # backup just in case
+        results.source = pycdc_run.stdout
 
-    # store error
-    if len(se.getvalue()):
-        results["error_msg"] = se.getvalue()
+    # Since pycdc isnt correctly checking for broken versions
+    # its failing to decomp hello world on 3.13+ without being reported as failure
+    # it is outright failing on 3.14
+    if type(results.version) is str:
+        major, minor = results.version.split(".")
+        if int(major) == 3 and int(minor) > 12:
+            return {
+                "error_type": DecompileErrors.PythonVersion,
+                "error_msg": DecompileErrors.PythonVersionMsg,
+            }
 
-        # Input had bad magic
-        if "Unknown magic number" in se.getvalue():
-            results["error_type"] = "Input"
-        elif "error_type" not in results:
-            results["error_type"] = "Decompile"
-    return results
+    # Determine if the decompiler knows it is incomplete
+    # This isn't always on the last line
+    results.partial_decompile = str("# WARNING: Decompyle incomplete" in stdout)
+
+    return results.model_dump(exclude_none=True, exclude_defaults=True)
 
 
 def decompile(content: bytes):
@@ -105,56 +171,47 @@ def decompile(content: bytes):
         return decompile_file(tmp.name)
 
 
-def extract_metadata(output):
-    """Unpacks metadata from header at start of uncompyle output.
+def extract_metadata(file: str):
+    """Unpacks metadata from header of pycdc object.
 
-    :param output: stdout and stderr concatenated from running uncompyle6
-    :return: a dict of results with metadat extracted
+    :param file: file path that is being handled
+    :return: a dict of results with metadata extracted
     """
-    lines = output.split(b"\n")
+    # pycdc doesn't output this metadata so i have to use this
+    # not getting code initially as this is only for metadata
+    try:
+        pyc_meta = xdis.load.load_module(file, get_code=False)
+    except ImportError:
+        return {
+            "error_type": DecompileErrors.PycHeader,
+            "error_msg": DecompileErrors.PycHeaderMsg,
+        }
+
     results = {}
+    results["magic"] = int(pyc_meta[2])
+    results["filesize"] = pyc_meta[5]
 
-    # to avoid processing all the source, only check the head for metadata
-    if len(lines) > 10:
-        head = lines[:10]
-    else:
-        head = lines
+    # Python didn't exist in 1970 (Python version < 3 only usually)
+    if pyc_meta[1] not in (0, None):
+        results["timestamp"] = datetime.fromtimestamp(pyc_meta[1])
 
-    for line in head:
-        # new uncompyle output seems to go 3 decimal versions.. only take first two as used as float later
-        # newer versions of uncompyle changed the output text. Added optional match group to support both.
-        matches = re.search(rb"^# Python bytecode(?: version base) (.\..)(\..)? \((.+)\)$", line)
-        if matches is not None:
-            # got a match, should have three groups?
-            results["version"] = float(matches.group(1))
-            results["magic"] = int(matches.group(3))
+    # only care about the major and minor version
+    # there can be a third field but rarely
+    results["version"] = ".".join(map(str, pyc_meta[0][:2]))
 
-        matches = re.search(b"^# Embedded file name: (.+)$", line)
-        if matches is not None:
-            filepath = matches.group(1)
-
-            if b"\\" in filepath or b"/" in filepath:
-                results["path"] = filepath.decode("utf-8")
-
-                # get just the filename
-                results["filename"] = filepath.replace(b"\\", b"/").split(b"/")[-1].decode("utf-8")
-            else:
-                results["filename"] = filepath.decode("utf-8")
-
-        matches = re.search(b"^# Compiled at: (.+)$", line)
-        if matches is not None:
-            # timestamp
-            results["timestamp"] = _ts_to_dt(matches.group(1).decode("utf-8"))
-
-    # strip changing temp path from file
-    regex = re.compile(b"# okay decompiling .+\\.pyc\n")
-    output = regex.sub(b"# okay decompiling\n", output)
-
-    regex = re.compile(b"# file .+\\.pyc\n")
-    output = regex.sub(b"", output)
-
-    # dump all output into source
-    results["source"] = output
+    # extract filename from xdis/pyc file, this requires get_code
+    # can throw errors, which is why its seperate from pure metadata
+    try:
+        pyc_meta2 = xdis.load.load_module(file, get_code=True)
+        if pyc_meta2[3] is not None:
+            if "\\" in file or "/" in file:
+                results["path"] = pyc_meta2[3].co_filename
+            results["filename"] = pyc_meta2[3].co_filename.replace("\\", "/").split("/")[-1]
+    except ImportError:
+        return {
+            "error_type": DecompileErrors.XdisGetCode,
+            "error_msg": DecompileErrors.XdisGetCodeMsg,
+        }
 
     return results
 

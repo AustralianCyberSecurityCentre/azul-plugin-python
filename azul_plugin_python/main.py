@@ -2,7 +2,6 @@
 
 from datetime import datetime, timezone
 
-import xdis.magics
 from azul_runner import (
     BinaryPlugin,
     DataLabel,
@@ -22,14 +21,14 @@ from azul_plugin_python.py2exe_unpacker import (
 )
 from azul_plugin_python.pyinstaller_unpacker import pyi
 
-from .decompiler.python_decompiler import decompile_file
+from .decompiler.python_decompiler import DecompileErrors, decompile_file
 
 
 class AzulPluginPython(BinaryPlugin):
     """Decompile and resubmit python bytecode."""
 
     CONTACT = "ASD's ACSC"
-    VERSION = "2025.11.20"
+    VERSION = "2026.08.11"
 
     DECOMPILE_DATA_TYPES = [
         "python/bytecode",
@@ -67,6 +66,11 @@ class AzulPluginPython(BinaryPlugin):
         Feature("python_compile_time", "Python bytecode compile time", FeatureType.Datetime),
         Feature("filename", "Original script filename", FeatureType.Filepath),
         Feature("tag", "Any informational label about the sample", FeatureType.String),
+        Feature(
+            name="partial_decompile",
+            desc="True/False value to indicate if the decompilation failed",
+            type=FeatureType.String,
+        ),
         # unpackers
         Feature(name="build_time", desc="Build time of the executable or archive", type=FeatureType.Datetime),
         Feature(name="python_library", desc="Python library package within this archive", type=FeatureType.String),
@@ -99,64 +103,80 @@ class AzulPluginPython(BinaryPlugin):
         child_features = {}
         parent_features = {}
         data = job.get_data()
-        # test file contents for known python magic bytes
-        if data.read(4) not in xdis.magics.versions.keys():
-            # unknown magic or not a .pyc file, so skip processing
-            return State(
-                label=State.Label.OPT_OUT,
-                failure_name="unknown_python_magic_bytes",
-                message="python magic bytes unknown or not a pyc file",
-            )
-
-        # rewind and get everything
-        data.seek(0)
         file_path = data.get_filepath()
 
-        dc = decompile_file(file_path)
+        decompilation = decompile_file(file_path)
 
-        # check decompilation results
-        if "error_type" in dc and "error_msg" in dc and "Unsupported Python version" in dc.get("error_msg", ""):
-            # FUTURE completed-empty
-            # decompilation returned an unsupported error only returned an error, give up
-            return State(
-                State.Label.OPT_OUT, failure_name="unsupported_python_version", message=dc.get("error_msg", "")
-            )
+        if "error_type" in decompilation and "error_msg" in decompilation:
+            decompilation.pop("partial_decompile", None)
 
-        if dc is None or (len(dc.keys()) == 2 and "error_type" in dc and "error_msg" in dc):
-            # decompilation only returned an error, give up
-            return State(State.Label.ERROR_EXCEPTION, message="decompilation failed")
+            if decompilation["error_type"] == DecompileErrors.BadMagicNumber:
+                return State(State.Label.OPT_OUT, failure_name=DecompileErrors.BadMagicNumberMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.PycdcLoading:
+                return State(State.Label.ERROR_INPUT, failure_name=DecompileErrors.PycdcLoadingMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.XdisGetCode:
+                return State(State.Label.ERROR_RUNNER, failure_name=DecompileErrors.XdisGetCodeMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.XdisPy3FilenameExtraction:
+                return State(State.Label.ERROR_RUNNER, failure_name=DecompileErrors.XdisPy3FilenameExtractionMsg)
+
+            elif decompilation["error_type"] == DecompileErrors.PythonVersion:
+                return State(State.Label.OPT_OUT, failure_name=DecompileErrors.PythonVersionMsg)
+
+            else:
+                # catch-all for errors just in case
+                return State(
+                    State.Label.ERROR_RUNNER,
+                    failure_name="unknown error",
+                    message=f"{decompilation['error_type']}:\n\n{decompilation['error_msg']}",
+                )
+
+        if "source" in decompilation:
+            if len(decompilation["source"]) == 0:
+                return State(
+                    State.Label.ERROR_RUNNER,
+                    failure_name=DecompileErrors.EmptySourceMsg,
+                    message=DecompileErrors.EmptySource,
+                )
 
         # got some decompilation results, so parent must be python bytecode
         parent_features["tag"] = ["python_bytecode"]
 
         # set this file's python version
-        if "version" in dc:
+        if "version" in decompilation:
             # set python version on the parent binary
             # we don't also set it on the child, since it shouldn't be a child feature
             # the feature value is formatted to match other plugins that set the same feature
-            parent_features["python_version"] = f"Python {dc['version']}"
+            parent_features["python_version"] = f"Python {decompilation['version']}"
 
-        if "timestamp" in dc:
+        if "timestamp" in decompilation:
             # set compile time on this binary
             # normalise on whatever lief uses for binaries
-            parent_features["python_compile_time"] = dc["timestamp"]
+            parent_features["python_compile_time"] = decompilation["timestamp"]
 
-        if "filename" in dc:
+        if "filename" in decompilation:
             # set filename on child
-            child_features["filename"] = Filepath(dc["filename"])
+            child_features["filename"] = Filepath(decompilation["filename"])
 
-        if "path" in dc:
+        if "path" in decompilation:
             # set path on child, overwriting previously set name if a full path exists
-            child_features["filename"] = Filepath(dc["path"])
+            child_features["filename"] = Filepath(decompilation["path"])
+
+        if "partial_decompile" in decompilation:
+            child_features["partial_decompile"] = str(decompilation["partial_decompile"])
 
         # if there's a child, set it up correctly
-        if "error_type" not in dc and "error_msg" not in dc and "source" in dc:
+        if "source" in decompilation:
             # add the decompiled output as a text stream on the parent
             # leave comments in, for now, as add context but might cause some stream variability
-            self.add_data(label=DataLabel.TEXT, data=dc["source"], tags={"language": "python"})
+            self.add_data(label=DataLabel.TEXT, data=decompilation["source"], tags={"language": "python"})
 
             # also raise as child for downstream processing/correlation
-            c = self.add_child_with_data({"action": "decompiled"}, self._clean_decompiled_child(dc["source"]))
+            c = self.add_child_with_data(
+                {"action": "decompiled"}, self._clean_decompiled_child(decompilation["source"])
+            )
             c.add_feature_values("tag", ["python_script", "decompiled_script"])
             c.add_many_feature_values(child_features)
 

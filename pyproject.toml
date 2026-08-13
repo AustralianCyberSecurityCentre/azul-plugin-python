@@ -26,6 +26,7 @@ classifiers=[
 dependencies = [
     "azul-bedrock>=11.0.26",
     "azul-runner>=9.0.38",
+    "hatchling>=1.31.0",
     "isort>=4.3,<5.0",
     "pefile>=2024.8.26",
     "pytz>=2020.4",
@@ -37,7 +38,7 @@ dependencies = [
 
 [project.scripts]
 azul-plugin-python = "azul_plugin_python.main:main"
-python_decompiler = "azul_plugin_python.python_decompiler:cmd"
+python_decompiler = "azul_plugin_python.decompiler.python_decompiler:cmd"
 pyi_unpacker = "azul_plugin_python.pyinstaller_unpacker.pyi:main"
 pyz_unpacker = "azul_plugin_python.pyinstaller_unpacker.pyz:main"
 
@@ -76,6 +77,9 @@ version_scheme = "only-version"
 
 [tool.hatch.version.fallback]
 version = "0.0.0"
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
 
 [dependency-groups]
 dev = [
