@@ -15,6 +15,8 @@ from azul_plugin_python.decompiler.python_decompiler import (
     DecompileErrors,
 )
 
+from azul_bedrock.test_utils.file_manager import FileManager
+
 test_script = b"print('Hello testing world!')"
 test_script_name = "hello.py"
 test_precompiled_name = os.path.join("bytecode", "hello.cpython-37.pyc")
@@ -152,3 +154,18 @@ class PyDecTest(unittest.TestCase):
             self.assertIn(test_script, results["source"])
 
             self.assertEqual(results["timestamp"], datetime.datetime(2021, 5, 7, 1, 54, 19))
+
+    def test_decompile_stdout_stderr_behaviour(self):
+        """Test .pyc files are being pumped to stdout and stderr correctly."""
+        # punycode.pyc, avaliable on VT
+        data = FileManager().download_file_path("332ddaf2a9f501560f1f616c8b79ae169a765534820f3943e947616c8f22f57d")
+        results = decompile_file(str(data))
+
+        # It should have extracted the filename
+        self.assertEqual(results["filename"], "punycode.py")
+
+        # It should be a partial decompile
+        self.assertTrue(results["partial_decompile"])
+
+        # There should be content
+        self.assertTrue(len(results["stdout_msg"]) > 0)
