@@ -101,8 +101,7 @@ class TestExecute(test_template.TestPlugin):
                 state=State(State.Label.COMPLETED),
                 events=[
                     Event(
-                        entity_type="binary",
-                        entity_id="96a0fc1b700c072571ec253d854c0bd44ff434749ec58637587297f02240ab76",
+                        sha256="96a0fc1b700c072571ec253d854c0bd44ff434749ec58637587297f02240ab76",
                         data=[
                             EventData(
                                 hash="grape",
@@ -118,11 +117,9 @@ class TestExecute(test_template.TestPlugin):
                     ),
                     Event(
                         parent=EventParent(
-                            entity_type="binary",
-                            entity_id="96a0fc1b700c072571ec253d854c0bd44ff434749ec58637587297f02240ab76",
+                            sha256="96a0fc1b700c072571ec253d854c0bd44ff434749ec58637587297f02240ab76",
                         ),
-                        entity_type="binary",
-                        entity_id="grape",
+                        sha256="grape",
                         relationship={"action": "decompiled"},
                         data=[EventData(hash="grape", label=DataLabel.CONTENT)],
                         features={
@@ -226,8 +223,7 @@ class TestExecute(test_template.TestPlugin):
                 state=State(State.Label.COMPLETED),
                 events=[
                     Event(
-                        entity_type="binary",
-                        entity_id="f9889a39046086f5e6297b01c58d92ce550c1fcbab5fe1d966c273bd2b1fb554",
+                        sha256="f9889a39046086f5e6297b01c58d92ce550c1fcbab5fe1d966c273bd2b1fb554",
                         data=[
                             EventData(
                                 hash="grape",
@@ -239,11 +235,9 @@ class TestExecute(test_template.TestPlugin):
                     ),
                     Event(
                         parent=EventParent(
-                            entity_type="binary",
-                            entity_id="f9889a39046086f5e6297b01c58d92ce550c1fcbab5fe1d966c273bd2b1fb554",
+                            sha256="f9889a39046086f5e6297b01c58d92ce550c1fcbab5fe1d966c273bd2b1fb554",
                         ),
-                        entity_type="binary",
-                        entity_id="grape",
+                        sha256="grape",
                         relationship={"action": "decompiled"},
                         data=[
                             EventData(
@@ -290,8 +284,7 @@ class TestExecute(test_template.TestPlugin):
                 state=State(State.Label.COMPLETED),
                 events=[
                     Event(
-                        entity_type="binary",
-                        entity_id="15725467b1e6c1bfbff1cdef632a603e4efe85d1321bf629d0a4692e03c8d704",
+                        sha256="15725467b1e6c1bfbff1cdef632a603e4efe85d1321bf629d0a4692e03c8d704",
                         data=[
                             EventData(
                                 hash="grape",
@@ -303,11 +296,9 @@ class TestExecute(test_template.TestPlugin):
                     ),
                     Event(
                         parent=EventParent(
-                            entity_type="binary",
-                            entity_id="15725467b1e6c1bfbff1cdef632a603e4efe85d1321bf629d0a4692e03c8d704",
+                            sha256="15725467b1e6c1bfbff1cdef632a603e4efe85d1321bf629d0a4692e03c8d704",
                         ),
-                        entity_type="binary",
-                        entity_id="grape",
+                        sha256="grape",
                         relationship={"action": "decompiled"},
                         data=[
                             EventData(
