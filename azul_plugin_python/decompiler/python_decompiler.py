@@ -89,7 +89,14 @@ def decompile_file(file_path: str):
         stderr=subprocess.PIPE,
     )
 
-    # easier to work with
+    # No output, and only errors captured means it likely doing some weird stuff
+    FORCE_OUTPUT_DECOMPILE = pycdc_run.stdout == b"" and len(pycdc_run.stderr) > 0
+    if FORCE_OUTPUT_DECOMPILE:
+        pycdc_run = subprocess.run(  # noqa: S603
+            ["stdbuf", "-o0", "-e0", pycdc_path, file_path],  # noqa: S607
+            capture_output=True,
+        )
+
     stdout = pycdc_run.stdout.decode("utf-8")
     stderr = pycdc_run.stderr.decode("utf-8")
 
@@ -122,8 +129,17 @@ def decompile_file(file_path: str):
         stderr_msg=stderr,
     )
 
+    # Keep results if the decompile is output is forced:
+    #   it still has results,
+    #   likely isn't an error,
+    #   and the output is of some value
+    if FORCE_OUTPUT_DECOMPILE and len(pycdc_run.stdout) > 0:
+        results.error_type = None
+        results.error_msg = None
+        results.source = pycdc_run.stdout
+
     # handle any errors
-    if "error_type" in metadata and "error_msg" in metadata:
+    if "error_type" in metadata and "error_msg" in metadata and not FORCE_OUTPUT_DECOMPILE:
         return results.model_dump(exclude_none=True, exclude_defaults=True)
 
     # pycdc generates "headers" that contain a filename, this is the parsed file
