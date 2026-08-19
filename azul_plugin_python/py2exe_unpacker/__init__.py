@@ -131,7 +131,7 @@ class Py2ExeUnpacker:
         if not hasattr(pe, "DIRECTORY_ENTRY_RESOURCE"):
             raise Py2ExeUnpackError("No directory entry resources were found, not a python executable!")
 
-        for rsrc in pe.DIRECTORY_ENTRY_RESOURCE.entries:
+        for rsrc in pe.DIRECTORY_ENTRY_RESOURCE.entries:  # ty: ignore[unresolved-attribute] False positive
             if rsrc.name is not None:
                 if rsrc.name.string == b"PYTHONSCRIPT":
                     logging.info("Found Python script resource - {}".format(rsrc.name.string))
@@ -353,7 +353,7 @@ class Py2ExeUnpacker:
                 self.pyc_filenames.append(filename)
             except (AttributeError, UnicodeDecodeError) as e:
                 raise Py2ExeUnpackError(
-                    "Failed to dump marshalled bytecode with xdis {}!".format(xdis.version.VERSION)
+                    "Failed to dump marshalled bytecode with xdis {}!".format(xdis.version.VERSION)  # ty: ignore[unresolved-attribute] False positive
                 ) from e
 
     def _set_timestamp(self):

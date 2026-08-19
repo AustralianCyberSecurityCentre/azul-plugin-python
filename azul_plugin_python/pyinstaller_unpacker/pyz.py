@@ -76,7 +76,7 @@ def _list_files_in_pyz_3(pyz: bytes) -> list:
     return filenames
 
 
-def list_pyz_files(contents: bytes) -> tuple[str, str]:
+def list_pyz_files(contents: bytes) -> tuple[dict[str, list], dict[str, list]]:
     """Parse out the filenames contained within the PYZ archive content.
 
     :param contents: Byte string containing PYZ archive
@@ -141,7 +141,7 @@ def list_pyz_files(contents: bytes) -> tuple[str, str]:
     return imports_short, imports_long
 
 
-def get_python_version(pyz: bytes) -> Optional[int]:
+def get_python_version(pyz: bytes) -> Optional[str]:
     """Get the Python version of a PYZ file from its header."""
     if py_ver := xdis.magics.magicint2version.get(xdis.magics.magic2int(pyz[4:8])):
         logging.info(f"Python version found in PYZ header is {py_ver}")
