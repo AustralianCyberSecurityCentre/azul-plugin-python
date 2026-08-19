@@ -159,7 +159,6 @@ class PyDecTest(unittest.TestCase):
         """Test .pyc files are being pumped to stdout and stderr correctly."""
         # punycode.pyc, avaliable on VT
         data = FileManager().download_file_path("332ddaf2a9f501560f1f616c8b79ae169a765534820f3943e947616c8f22f57d")
-
         results = decompile_file(str(data))
 
         # It should have extracted the filename
