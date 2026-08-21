@@ -13,7 +13,7 @@ This produces output such as the following:
 
 
 All the compiled Python scripts from within the py2exe binary are extracted as compiled Python bytecode files
-(*.pyc).  These can be decompiled with uncompyle6.  Typically two or three compiled scripts will be unpacked,
+(*.pyc).  These can be decompiled with pycdc.  Typically two or three compiled scripts will be unpacked,
 with one being the main script and the others being required by the py2exe binary to load the Python environment
 in preparation for the main script.
 

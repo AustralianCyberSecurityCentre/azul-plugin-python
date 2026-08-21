@@ -20,7 +20,7 @@ from azul_bedrock.test_utils.file_manager import FileManager
 test_script = b"print('Hello testing world!')"
 test_script_name = "hello.py"
 test_precompiled_name = os.path.join("bytecode", "hello.cpython-37.pyc")
-test_precompiled_py310_name = os.path.join("bytecode", "dummy_file.cpython-310.pyc")
+test_precompiled_py314 = os.path.join("bytecode", "hello_world314.cpython-314.pyc")
 
 
 class PyDecTest(unittest.TestCase):
@@ -29,10 +29,11 @@ class PyDecTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up data required for testing."""
-        cls.pyc_path = os.path.join(os.path.dirname(__file__), test_precompiled_name)
+        cls.pyc_path_37 = os.path.join(os.path.dirname(__file__), test_precompiled_name)
+        cls.pyc_path_314 = os.path.join(os.path.dirname(__file__), test_precompiled_py314)
 
         # read .pyc bytecode into memory
-        with open(cls.pyc_path, "rb") as f:
+        with open(cls.pyc_path_37, "rb") as f:
             cls.hello_pyc = f.read()
 
         test_array = bytearray()
@@ -111,7 +112,7 @@ class PyDecTest(unittest.TestCase):
 
     def test_simple_decompile_file(self):
         """Test compiled hello world."""
-        results = decompile_file(self.pyc_path)
+        results = decompile_file(self.pyc_path_37)
 
         # filename should match that of compiled file
         self.assertEqual(results["filename"], "hello.py")
@@ -131,7 +132,7 @@ class PyDecTest(unittest.TestCase):
     def test_simple_decompile_file_bad_extension(self):
         """Test compiled hello world."""
         with tempfile.NamedTemporaryFile() as pyc_no_ext_file:
-            with open(self.pyc_path, "rb") as f:
+            with open(self.pyc_path_37, "rb") as f:
                 pyc_no_ext_file.write(f.read())
             pyc_no_ext_file.seek(0)
 
@@ -169,3 +170,16 @@ class PyDecTest(unittest.TestCase):
 
         # There should be content
         self.assertTrue(len(results["stdout_msg"]) > 0)
+
+    def test_python314(self):
+        """Test .pyc file of hello world compiled with Python 3.14"""
+        results = decompile_file(self.pyc_path_314)
+
+        # pycdc doesn't have the magic number for python3.14
+        self.assertIn("error_type", results)
+        self.assertEqual(results["error_type"], DecompileErrors.BadMagicNumber)
+
+        self.assertIn("error_msg", results)
+        self.assertEqual(results["error_msg"], DecompileErrors.BadMagicNumberMsg)
+
+        self.assertEqual(len(results), 2)

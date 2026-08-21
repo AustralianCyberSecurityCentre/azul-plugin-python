@@ -211,7 +211,6 @@ class TestExecute(test_template.TestPlugin):
             ],
         )
         # hashes are prone to change
-        # hashes are prone to change
         result = result.get(self.MULTI_PLUGIN_KEY)
         result.data = {}
         result.events[0].data[0].hash = "grape"
@@ -314,32 +313,5 @@ class TestExecute(test_template.TestPlugin):
                     ),
                 ],
                 data={},
-            ),
-        )
-
-    def test_python312(self):
-        """Test something from Python 3.12 and make sure it fails.
-
-        .pyc file taken from the python_decompiler project.
-        """
-        return
-        result = self.do_execution(
-            entity_attrs={"file_format": self.FILE_FORMAT_OVERRIDE},
-            data_in=[
-                (
-                    "content",
-                    self.load_test_file_bytes(
-                        "f9b6351131c9db9126804e88fa476d1863f785d2c1e342c7ebe74c7486384f28", "Python 3.10 pyc."
-                    ),
-                )
-            ],
-        )
-        result = result.get(self.MULTI_PLUGIN_KEY)
-        self.assertJobResult(
-            result,
-            JobResult(
-                state=State(
-                    State.Label.OPT_OUT, failure_name="unsupported_python_version", message=result.state.message
-                )
             ),
         )
