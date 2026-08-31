@@ -217,19 +217,19 @@ class TestExecute(test_template.TestPlugin):
                         },
                     ),
                     Event(
-                        sha256="dcfda9fa44c91e8567d81e224f30dc373e07043bd9a32c0f127f5b065dcc3572",
+                        sha256="6f4a11db2a786227f5e4773dbf13af827279eade7ba9437b9bf166bc684fe528",
                         parent=EventParent(sha256="5cf8e07fb186ca108d5006f138c1f3477c7cac4e138728d0739075f38d129c1c"),
                         relationship={"action": "unpacked_py2exe"},
                         data=[
                             EventData(
-                                hash="dcfda9fa44c91e8567d81e224f30dc373e07043bd9a32c0f127f5b065dcc3572",
-                                label=DataLabel.CONTENT,
+                                hash="6f4a11db2a786227f5e4773dbf13af827279eade7ba9437b9bf166bc684fe528",
+                                label="content",
                             )
                         ],
                         features={"filename": [FV("st_main.pyc")]},
                     ),
                 ],
-                data={"dcfda9fa44c91e8567d81e224f30dc373e07043bd9a32c0f127f5b065dcc3572": b""},
+                data={"6f4a11db2a786227f5e4773dbf13af827279eade7ba9437b9bf166bc684fe528": b""},
             ),
         )
 
@@ -253,19 +253,19 @@ class TestExecute(test_template.TestPlugin):
                         features={"python_version": [FV("Python 2.7")]},
                     ),
                     Event(
-                        sha256="f13fa6cf3cd72187030e47025344820bd55b2c7d8cb78268e91beeb20168a94e",
+                        sha256="485dbae6c25a19a35f25c6582b4d5e706094396478a9d26fc857eca83443ae38",
                         parent=EventParent(sha256="0565ead1f29f6ee0ee0cdb3d355b4e65d779cca8e5cf244cae169a61bb6b8a0e"),
                         relationship={"action": "unpacked_py2exe"},
                         data=[
                             EventData(
-                                hash="f13fa6cf3cd72187030e47025344820bd55b2c7d8cb78268e91beeb20168a94e",
-                                label=DataLabel.CONTENT,
+                                hash="485dbae6c25a19a35f25c6582b4d5e706094396478a9d26fc857eca83443ae38",
+                                label="content",
                             )
                         ],
                         features={"filename": [FV("ZJRM.pyc")]},
                     ),
                 ],
-                data={"f13fa6cf3cd72187030e47025344820bd55b2c7d8cb78268e91beeb20168a94e": b""},
+                data={"485dbae6c25a19a35f25c6582b4d5e706094396478a9d26fc857eca83443ae38": b""},
             ),
         )
 
@@ -384,19 +384,19 @@ class TestExecute(test_template.TestPlugin):
                         },
                     ),
                     Event(
-                        sha256="6c1d9c1084def7141ad31ce082fd910e5463f80516a48a3ca112381b7904c197",
+                        sha256="8cf078aec9737f1249c58a9f770cbcb3f987d411e63e142027325fa792e1cbe2",
                         parent=EventParent(sha256="dbc0c1b3c94b36d47510af7ad3e6f72133917e8f02c569a02533cbea60989b3d"),
                         relationship={"action": "unpacked_py2exe"},
                         data=[
                             EventData(
-                                hash="6c1d9c1084def7141ad31ce082fd910e5463f80516a48a3ca112381b7904c197",
-                                label=DataLabel.CONTENT,
+                                hash="8cf078aec9737f1249c58a9f770cbcb3f987d411e63e142027325fa792e1cbe2",
+                                label="content",
                             )
                         ],
                         features={"filename": [FV("proxy.pyc")]},
                     ),
                 ],
-                data={"6c1d9c1084def7141ad31ce082fd910e5463f80516a48a3ca112381b7904c197": b""},
+                data={"8cf078aec9737f1249c58a9f770cbcb3f987d411e63e142027325fa792e1cbe2": b""},
             ),
         )
 
