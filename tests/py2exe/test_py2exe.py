@@ -28,12 +28,12 @@ class Py2ExeTest(unittest.TestCase):
         self.assertEqual(3, len(contents["scripts"]))
         # user script
         self.assertTrue("st_main.pyc" in contents["scripts"])
-        self.assertEqual(3825, len(contents["scripts"]["st_main.pyc"]))
+        self.assertEqual(3742, len(contents["scripts"]["st_main.pyc"]))
         # py2exe artifacts
         self.assertTrue(r"C:\Python27\lib\site-packages\py2exe\boot_common.pyc" in contents["scripts"])
-        self.assertEqual(2430, len(contents["scripts"][r"C:\Python27\lib\site-packages\py2exe\boot_common.pyc"]))
+        self.assertEqual(2358, len(contents["scripts"][r"C:\Python27\lib\site-packages\py2exe\boot_common.pyc"]))
         self.assertTrue("<install zipextimporter>.pyc" in contents["scripts"])
-        self.assertEqual(171, len(contents["scripts"]["<install zipextimporter>.pyc"]))
+        self.assertEqual(162, len(contents["scripts"]["<install zipextimporter>.pyc"]))
 
     def test_py2exe_bad_exe(self):
         fm = FileManager()
