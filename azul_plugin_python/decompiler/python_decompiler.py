@@ -14,6 +14,7 @@ from enum import StrEnum
 
 import xdis
 import xdis.load
+import xdis.magics
 from pydantic import BaseModel
 
 
@@ -58,6 +59,9 @@ class DecompileErrors(StrEnum):
     # xdis python3 get filename
     XdisPy3FilenameExtraction = "xdis data extraction failed"
     XdisPy3FilenameExtractionMsg = "xdis_filename_extraction"
+    # xdis python3.12 rust collision
+    XdisPy312MagicByteCollection = "xdis threw error on py3.12 loading (assertion)"
+    XdisPy312MagicByteCollectionMsg = "xdis_load_312_assertion"
     # python version
     PythonVersion = "Unsupported Python version (3.12+)"
     PythonVersionMsg = "unsupported_version"
@@ -202,6 +206,21 @@ def extract_metadata(file: str):
             "error_type": DecompileErrors.PycHeader,
             "error_msg": DecompileErrors.PycHeaderMsg,
         }
+    except AssertionError:
+        with open(file, "rb") as f:
+            magic_bytes = f.read(4)
+            f.close()
+
+        # seems to be a bug with how xdis interacts with python12
+        # as it shares a magic number with rust python
+        # see: xdis.load.load_module_from_file_object (line 241)
+        if xdis.magics.magic2int(magic_bytes) == 3531:
+            return {
+                "error_type": DecompileErrors.XdisPy312MagicByteCollection,
+                "error_msg": DecompileErrors.XdisPy312MagicByteCollectionMsg,
+            }
+
+        raise
 
     results = {}
     results["magic"] = int(pyc_meta[2])
