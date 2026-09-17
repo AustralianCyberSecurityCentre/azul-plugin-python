@@ -8,7 +8,6 @@ from azul_runner import (
     Event,
     EventData,
     EventParent,
-    Filepath,
     JobResult,
     State,
     test_template,
@@ -123,7 +122,7 @@ class TestExecute(test_template.TestPlugin):
                         relationship={"action": "decompiled"},
                         data=[EventData(hash="grape", label=DataLabel.CONTENT)],
                         features={
-                            "filename": [FV(Filepath("ataque4.py"))],
+                            "filename": [FV("ataque4.py")],
                             "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
@@ -306,7 +305,7 @@ class TestExecute(test_template.TestPlugin):
                             )
                         ],
                         features={
-                            "filename": [FV(Filepath("reverse_backdoor.py"))],
+                            "filename": [FV("reverse_backdoor.py")],
                             "partial_decompile": [FV("False")],
                             "tag": [FV("decompiled_script"), FV("python_script")],
                         },
