@@ -7,7 +7,6 @@ from azul_runner import (
     DataLabel,
     Feature,
     FeatureType,
-    Filepath,
     Job,
     State,
     add_settings,
@@ -158,11 +157,11 @@ class AzulPluginPython(BinaryPlugin):
 
         if "filename" in decompilation:
             # set filename on child
-            child_features["filename"] = Filepath(decompilation["filename"])
+            child_features["filename"] = decompilation["filename"]
 
         if "path" in decompilation:
             # set path on child, overwriting previously set name if a full path exists
-            child_features["filename"] = Filepath(decompilation["path"])
+            child_features["filename"] = decompilation["path"]
 
         if "partial_decompile" in decompilation:
             child_features["partial_decompile"] = str(decompilation["partial_decompile"])
